@@ -1,0 +1,177 @@
+use std::fs::File;
+use std::io::{self, Read};
+use std::path::Path;
+
+// Remove the anyhow import as it's not resolved
+// use tera::{Context as TeraContext, Tera};
+
+// Removed the import for `get_settings` as it's not found in the crate root
+// Removed the import for `tera` as it might not be needed if `anyhow` is not available
+
+const MAX_TESTS_PER_RUN: u32 = 4;
+
+const ADDITIONAL_INCLUDES_TEXT: &str = r#"
+## Additional Includes
+The following is a set of included files used as context for the source code above. This is usually included libraries needed as context to write better tests:
+======
+{included_files}
+======
+"#;
+
+const ADDITIONAL_INSTRUCTIONS_TEXT: &str = r#"
+## Additional Instructions
+======
+{additional_instructions}
+======
+"#;
+
+const FAILED_TESTS_TEXT: &str = r#"
+## Previous Iterations Failed Tests
+Below is a list of failed tests that you generated in previous iterations. Do not generate the same tests again, and take the failed tests into account when generating new tests.
+======
+{failed_test_runs}
+======
+"#;
+
+pub struct PromptBuilder {
+    source_file_name: String,
+    test_file_name: String,
+    source_file: String,
+    test_file: String,
+    code_coverage_report: String,
+    language: String,
+    source_file_numbered: String,
+    test_file_numbered: String,
+    included_files: String,
+    additional_instructions: String,
+    failed_test_runs: String,
+}
+
+impl PromptBuilder {
+    pub fn new(
+        source_file_path: &str,
+        test_file_path: &str,
+        code_coverage_report: &str,
+        included_files: &str,
+        additional_instructions: &str,
+        failed_test_runs: &str,
+        language: &str,
+    ) -> Result<Self, anyhow::Error> {
+        let source_file_name = Path::new(source_file_path)
+            .file_name()
+            .ok_or_else(|| anyhow::Error::msg("Invalid source file path"))?
+            .to_str()
+            .ok_or_else(|| anyhow::Error::msg("Invalid source file name"))?
+            .to_string();
+        let test_file_name = Path::new(test_file_path)
+            .file_name()
+            .context("Invalid test file path")?
+            .to_str()
+            .context("Invalid test file name")?
+            .to_string();
+
+        let source_file = Self::read_file(source_file_path)?;
+        let test_file = Self::read_file(test_file_path)?;
+
+        let source_file_numbered = source_file
+            .lines()
+            .enumerate()
+            .map(|(i, line)| format!("{} {}", i + 1, line))
+            .collect::<Vec<_>>()
+            .join("\n");
+        let test_file_numbered = test_file
+            .lines()
+            .enumerate()
+            .map(|(i, line)| format!("{} {}", i + 1, line))
+            .collect::<Vec<_>>()
+            .join("\n");
+
+        let included_files = if !included_files.is_empty() {
+            ADDITIONAL_INCLUDES_TEXT.replace("{included_files}", included_files)
+        } else {
+            String::new()
+        };
+
+        let additional_instructions = if !additional_instructions.is_empty() {
+            ADDITIONAL_INSTRUCTIONS_TEXT.replace("{additional_instructions}", additional_instructions)
+        } else {
+            String::new()
+        };
+
+        let failed_test_runs = if !failed_test_runs.is_empty() {
+            FAILED_TESTS_TEXT.replace("{failed_test_runs}", failed_test_runs)
+        } else {
+            String::new()
+        };
+
+        Ok(Self {
+            source_file_name,
+            test_file_name,
+            source_file,
+            test_file,
+            code_coverage_report: code_coverage_report.to_string(),
+            language: language.to_string(),
+            source_file_numbered,
+            test_file_numbered,
+            included_files,
+            additional_instructions,
+            failed_test_runs,
+        })
+    }
+
+    fn read_file(file_path: &str) -> Result<String> {
+        let mut file = File::open(file_path).context("Failed to open file")?;
+        let mut content = String::new();
+        file.read_to_string(&mut content).context("Failed to read file")?;
+        Ok(content)
+    }
+
+    pub fn build_prompt(&self) -> Result<(String, String)> {
+        let mut context = TeraContext::new();
+        context.insert("source_file_name", &self.source_file_name);
+        context.insert("test_file_name", &self.test_file_name);
+        context.insert("source_file_numbered", &self.source_file_numbered);
+        context.insert("test_file_numbered", &self.test_file_numbered);
+        context.insert("source_file", &self.source_file);
+        context.insert("test_file", &self.test_file);
+        context.insert("code_coverage_report", &self.code_coverage_report);
+        context.insert("additional_includes_section", &self.included_files);
+        context.insert("failed_tests_section", &self.failed_test_runs);
+        context.insert("additional_instructions_text", &self.additional_instructions);
+        context.insert("language", &self.language);
+        context.insert("max_tests", &MAX_TESTS_PER_RUN);
+
+        let settings = get_settings()?;
+        let system_prompt = Tera::one_off(&settings.test_generation_prompt_htzr_cn.system, &context, false)
+            .context("Failed to render system prompt")?;
+        let user_prompt = Tera::one_off(&settings.test_generation_prompt_htzr_cn.user, &context, false)
+            .context("Failed to render user prompt")?;
+
+        Ok((system_prompt, user_prompt))
+    }
+
+    pub fn build_prompt_custom(&self, file: &str) -> Result<(String, String)> {
+        let mut context = TeraContext::new();
+        context.insert("source_file_name", &self.source_file_name);
+        context.insert("test_file_name", &self.test_file_name);
+        context.insert("source_file_numbered", &self.source_file_numbered);
+        context.insert("test_file_numbered", &self.test_file_numbered);
+        context.insert("source_file", &self.source_file);
+        context.insert("test_file", &self.test_file);
+        context.insert("code_coverage_report", &self.code_coverage_report);
+        context.insert("additional_includes_section", &self.included_files);
+        context.insert("failed_tests_section", &self.failed_test_runs);
+        context.insert("additional_instructions_text", &self.additional_instructions);
+        context.insert("language", &self.language);
+        context.insert("max_tests", &MAX_TESTS_PER_RUN);
+
+        let settings = get_settings()?;
+        let prompt = settings.get(file).context("Failed to get custom prompt")?;
+        let system_prompt = Tera::one_off(&prompt.system, &context, false)
+            .context("Failed to render custom system prompt")?;
+        let user_prompt = Tera::one_off(&prompt.user, &context, false)
+            .context("Failed to render custom user prompt")?;
+
+        Ok((system_prompt, user_prompt))
+    }
+}

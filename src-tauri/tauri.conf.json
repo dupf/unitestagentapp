@@ -1,0 +1,92 @@
+{
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "build": {
+    "beforeBuildCommand": "pnpm build:fe",
+    "beforeDevCommand": "pnpm dev:fe",
+    "devPath": "http://localhost:1002",
+    "distDir": "../dist"
+  },
+  "package": {
+    "productName": "UnitestAgent",
+    "version": "0.1.6"
+  },
+  "tauri": {
+    "allowlist": {
+      "all": false,
+      "os": {
+        "all": true
+      },
+      "window": {
+        "all": false,
+        "close": true,
+        "hide": true,
+        "show": true,
+        "startDragging": true
+      },
+      "http": {
+        "all": true,
+        "request": true,
+        "scope": [
+          "https://api.openai.com/v1/*"
+        ]
+      },
+      "shell": {
+        "open": true
+      },
+      "fs": {
+        "all": true,
+        "scope": [
+          "$DOWNLOAD/*"
+        ]
+      },
+      "path": {
+        "all": true
+      },
+      "dialog": {
+        "all": true
+      },
+      "process": {
+        "all": false,
+        "relaunch": true,
+        "exit": true
+      }
+    },
+    "bundle": {
+      "active": true,
+      "category": "DeveloperTool",
+      "copyright": "",
+      "deb": {
+        "depends": []
+      },
+      "externalBin": [],
+      "identifier": "me.honglu.chatgpt",
+      "longDescription": "ChatGPT Desktop Application",
+      "macOS": {
+        "entitlements": null,
+        "exceptionDomain": "",
+        "frameworks": [],
+        "providerShortName": null,
+        "signingIdentity": null
+      },
+      "resources": [],
+      "shortDescription": "ChatGPT-Tauri",
+      "targets": "all",
+      "windows": {
+        "certificateThumbprint": null,
+        "digestAlgorithm": "sha256",
+        "timestampUrl": ""
+      }
+    },
+    "security": {
+      "csp": null
+    },
+    "updater": {
+      "active": true,
+      "dialog": false,
+      "endpoints": [
+        "https://pljhonglu.github.io/ChatGPT-T/install.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM2OUUyQUQ5QjE1Q0FEMTEKUldRUnJWeXgyU3FlTmxOS0N0aVBhNGUwL3c3QlBIY29uMHFUdmhUZS9YNmpKNE83L1BKZ3dER2QK"
+    }
+  }
+}

@@ -1,0 +1,48 @@
+[package]
+name = "unitestAgent"
+version = "0.1.0"
+description = "一个基于桌面的单元测试应用程序"
+authors = ["you"]
+license = ""
+repository = ""
+default-run = "unitestAgent"
+edition = "2021"
+rust-version = "1.59"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[build-dependencies]
+tauri-build = { version = "1.2.1", features = [] }
+
+[dependencies]
+serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"] }
+tauri = { version = "1.2.4", features = ["dialog-all", "fs-all", "http-all", "os-all", "path-all", "process-exit", "process-relaunch", "shell-open", "updater", "window-close", "window-hide", "window-show", "window-start-dragging"] }
+tauri-plugin-log = { git = "https://github.com/lencx/tauri-plugins-workspace", branch = "dev", features = ["colored"] }
+tokio = "1.26.0"
+reqwest = { version="0.11.14", features= ["stream", "socks"] }
+rocket = {"git" = "https://github.com/SergioBenitez/Rocket"}
+bytes = "*"
+tokio-util = {version="0.7.7", feature= ["io"] }
+futures = "0.3.27"
+eventsource-stream = "0.2.3"
+futures-util = "0.3.27"
+thiserror = "1.0.39"
+log = "0.4.17"
+log4rs = "1.0"
+regex = "1.5.4"  # 可以选择最新版本
+serde_yaml = "0.8"  # 或者选择最新版本
+xml = "0.8.20"
+csv = "1.0.0"
+tera = "1.19.0"  # Use the latest version available
+config = "0.13.0"
+
+
+
+[features]
+# by default Tauri runs in production mode
+# when `tauri dev` runs it is executed with `cargo run --no-default-features` if `devPath` is an URL
+default = ["custom-protocol"]
+# this feature is used for production builds where `devPath` points to the filesystem
+# DO NOT remove this
+custom-protocol = ["tauri/custom-protocol"]

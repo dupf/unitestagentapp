@@ -1,0 +1,111 @@
+<script setup lang='ts'>
+import type { CSSProperties } from 'vue'
+import { computed, watch } from 'vue'
+import { NButton, NLayoutSider } from 'naive-ui'
+import { tauri } from '@tauri-apps/api'
+import List from './List.vue'
+import Footer from './Footer.vue'
+import { useAppStore, useChatStore } from '@/store'
+import { useBasicLayout } from '@/hooks/useBasicLayout'
+
+const appStore = useAppStore()
+const chatStore = useChatStore()
+
+const { isMobile } = useBasicLayout()
+
+const collapsed = computed(() => appStore.siderCollapsed)
+
+// function handleAdd(event: Event) {
+//   const input = event.target as HTMLElement
+//   const title = input.innerText
+//   chatStore.addHistory({ title, uuid: Date.now(), isEdit: false })
+// }
+
+function handleAdd_proj(event: Event) {
+  const input = event.target as HTMLElement
+  const title = input.innerText
+  chatStore.addHistory({ title, uuid: Date.now(), isEdit: false })
+
+  tauri.invoke('new_window', {
+    title: '项目配置',
+    label: 'project_store',
+    url: '/#/window/project-store',
+  })
+}
+function handleUpdateCollapsed() {
+  appStore.setSiderCollapsed(!collapsed.value)
+}
+function showPromptStore() {
+  tauri.invoke('new_window', {
+    label: 'prompt_store',
+    title: 'Ptompt Store',
+    url: '/#/window/prompt-store',
+  })
+}
+
+const getMobileClass = computed<CSSProperties>(() => {
+  if (isMobile.value) {
+    return {
+      position: 'fixed',
+      zIndex: 50,
+    }
+  }
+  return {}
+})
+
+const mobileSafeArea = computed(() => {
+  if (isMobile.value) {
+    return {
+      paddingBottom: 'env(safe-area-inset-bottom)',
+    }
+  }
+  return {}
+})
+
+watch(
+  isMobile,
+  (val) => {
+    appStore.setSiderCollapsed(val)
+  },
+  {
+    immediate: true,
+    flush: 'post',
+  },
+)
+</script>
+
+<template>
+  <NLayoutSider
+    :collapsed="collapsed"
+    :collapsed-width="0"
+    :width="260"
+    :show-trigger="isMobile ? false : 'arrow-circle'"
+    collapse-mode="transform"
+    position="absolute"
+    bordered
+    :style="getMobileClass"
+    @update-collapsed="handleUpdateCollapsed"
+  >
+    <div class="flex flex-col h-full" :style="mobileSafeArea">
+      <main class="flex flex-col flex-1 min-h-0">
+        <div class="p-4">
+          <NButton dashed block @click="handleAdd_proj($event)">
+            {{ $t('sider.newProj') }}
+          </NButton>
+        </div>
+        <div class="flex-1 min-h-0 pb-4 overflow-hidden">
+          <List />
+        </div>
+        <div class="p-4">
+          <NButton block @click="showPromptStore">
+            {{ $t('sider.promptStore') }}
+          </NButton>
+        </div>
+      </main>
+      <Footer />
+    </div>
+  </NLayoutSider>
+  <template v-if="isMobile">
+    <div v-show="!collapsed" class="fixed inset-0 z-40 bg-black/40" @click="handleUpdateCollapsed" />
+  </template>
+</template>
