@@ -46,10 +46,14 @@
 #       - name: Typecheck
 #         run: nr type-check
 # .github/workflows/build.yml
-name: Build Binary
+name: CI
 
 on:
   push:
+    branches:
+      - main
+
+  pull_request:
     branches:
       - main
 
@@ -59,12 +63,12 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Node.js
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v3
         with:
-          node-version: '16' # Specify your Node.js version
+          node-version: '18.x' # Specify your Node.js version
 
       - name: Install dependencies
         run: npm install
@@ -79,7 +83,7 @@ jobs:
           # Example: cp path/to/generated/binary ./output/binary-file
           
       - name: Upload binary
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: binary-file
           path: ./output/binary-file # Adjust the path to your generated binary
