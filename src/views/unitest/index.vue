@@ -2,7 +2,7 @@
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { NButton, useDialog, useMessage, useNotification } from 'naive-ui'
-import html2canvas from 'html2canvas'
+import { save } from '@tauri-apps/api/dialog'
 import { invoke } from '@tauri-apps/api'
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -162,47 +162,100 @@ async function onRegenerate(index: number) {
   loading.value = false
 }
 
-function handleExport() {
-  if (loading.value)
-    return
+// function handleExport() {
+//   const d = dialog.warning({
+//     title: t('chat.exportImage'),
+//     content: t('chat.exportImageConfirm'),
+//     positiveText: t('common.yes'),
+//     negativeText: t('common.no'),
+//     onPositiveClick: async () => {
+//       try {
+//         d.loading = true
+//         const ele = document.getElementById('image-wrapper')
+//         const canvas = await html2canvas(ele as HTMLDivElement, {
+//           useCORS: true,
+//         })
+//         const imgData = canvas.toDataURL('image/png')
+//         const binaryData = atob(imgData.split('base64,')[1])
+//         const data = []
+//         for (let i = 0; i < binaryData.length; i++)
+//           data.push(binaryData.charCodeAt(i))
+//         await invoke('download_img', { name: 'ChatGPT-xxxx.jpg', blob: data })
+//         // await invoke('download_report', { name: 'ChatGPT-xxxx.jpg', blob: data })
+//         ms.success(t('chat.exportSuccess'))
+//         Promise.resolve()
+//       }
+//       catch (error: any) {
+//         ms.error(t('chat.exportFailed'))
+//       }
+//       finally {
+//         d.loading = false
+//       }
+//     },
+//   })
+// }
 
-  const d = dialog.warning({
-    title: t('chat.exportImage'),
-    content: t('chat.exportImageConfirm'),
-    positiveText: t('common.yes'),
-    negativeText: t('common.no'),
-    onPositiveClick: async () => {
-      try {
-        d.loading = true
-        const ele = document.getElementById('image-wrapper')
-        const canvas = await html2canvas(ele as HTMLDivElement, {
-          useCORS: true,
-        })
-        const imgData = canvas.toDataURL('image/png')
-        const binaryData = atob(imgData.split('base64,')[1])
-        const data = []
-        for (let i = 0; i < binaryData.length; i++)
-          data.push(binaryData.charCodeAt(i))
-
-        await invoke('download_img', { name: 'ChatGPT-xxxx.jpg', blob: data })
-
-        ms.success(t('chat.exportSuccess'))
-        Promise.resolve()
-      }
-      catch (error: any) {
-        ms.error(t('chat.exportFailed'))
-      }
-      finally {
-        d.loading = false
-      }
-    },
+async function saveexportFile() {
+  // 模拟要保存的文件内容
+  const content = '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
+  // 调用保存对话框，用户选择保存路径
+  const filePath = await save({
+    defaultPath: 'saved_file.doc',
   })
+  if (filePath) {
+    try {
+      ms.info('保存文件1')
+      // 调用 Rust 后端命令，保存文件
+      await invoke('download_img', { src_path: content, dest_path: filePath })
+      ms.info('保存文件2====')
+    }
+    catch (error) {
+      console.error('保存文件失败:', error)
+    }
+  }
+  else {
+    alert('未选择保存路径')
+  }
 }
+
+// function handleExportReport() {
+//   if (loading.value)
+//     return
+//   const d = dialog.warning({
+//     title: t('chat.exportWord'),
+//     content: t('chat.exportWordConfirm'),
+//     positiveText: t('common.yes'),
+//     negativeText: t('common.no'),
+//     onPositiveClick: async () => {
+//       try {
+//         d.loading = true
+//         // const ele = document.getElementById('image-wrapper')
+//         // const canvas = await html2canvas(ele as HTMLDivElement, {
+//         //   useCORS: true,
+//         // })
+//         // const imgData = canvas.toDataURL('image/png')
+//         // const binaryData = atob(imgData.split('base64,')[1])
+//         // const data = []
+//         // for (let i = 0; i < binaryData.length; i++)
+//         //   data.push(binaryData.charCodeAt(i))
+//         await invoke('download_report', { src_path: '', dest_path: 'Export.jpg' })
+//         // await invoke('download_report', { name: 'ChatGPT-xxxx.jpg', blob: data })
+//         ms.success(t('chat.exportSuccess'))
+//         Promise.resolve()
+//       }
+//       catch (error: any) {
+//         ms.error(t('chat.exportFailed'))
+//       }
+//       finally {
+//         d.loading = false
+//       }
+//     },
+//   })
+// }
 
 function handleDelete(index: number) {
   if (loading.value)
     return
-
   dialog.warning({
     title: t('chat.deleteMessage'),
     content: t('chat.deleteMessageConfirm'),
@@ -309,7 +362,7 @@ onUnmounted(() => {
     <HeaderComponent
       v-if="isMobile"
       :using-context="usingContext"
-      @export="handleExport"
+      @export="saveexportFile"
       @toggle-using-context="toggleUsingContext"
     />
     <main class="flex-1 overflow-hidden">
@@ -364,7 +417,7 @@ onUnmounted(() => {
               <SvgIcon icon="ri:delete-bin-line" />
             </span>
           </HoverButton>
-          <HoverButton v-if="!isMobile" @click="handleExport">
+          <HoverButton v-if="!isMobile" @click="saveexportFile">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:download-2-line" />
             </span>

@@ -41,6 +41,7 @@ fn main() {
     cmd::gpt::fetch_chat_api,
     cmd::gpt::fetch_unitest_api,
     cmd::download::download_img,
+    cmd::download::download_report,
     cmd::window::new_window
   ])
   .setup(builder::setup);

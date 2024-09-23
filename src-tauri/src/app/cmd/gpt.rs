@@ -159,60 +159,29 @@ pub async fn fetch_unitest_api(
     let parsed_contents: Vec<String> = user_contents.iter()
         .flat_map(|content| content.split('|').map(String::from).collect::<Vec<String>>())
         .collect();
-
-    let args: Vec<&str> = user_contents.iter().map(AsRef::as_ref).collect();
-
-    // log::info!("Parsed contents: {:?}", parsed_contents);
-    // let proxy_str = option.proxy.unwrap_or(String::from(""));
-    // let client : reqwest::Client = {
-    //     log::info!("proxy is: {}", proxy_str);
-    //     let mut client_builder = reqwest::Client::builder();
-    //     if proxy_str.len()>0 {
-    //         let proxy = reqwest::Proxy::all(proxy_str).unwrap();
-    //         client_builder = client_builder.proxy(proxy);
-    //     }
-    //     client_builder.build().unwrap()
-    // };
-    // let api_url = Url::parse(&option.host).unwrap().join("/v1/chat/completions").unwrap().as_str().to_owned();
-    // let res = client.post(api_url)
-    //     .header("Content-Type", "application/json")
-    //     .header("Authorization", format!("Bearer {}", option.apiKey))
-    //     .header(reqwest::header::USER_AGENT, format!("ChatGPT-Tauri ({})", OS))
-    //     .timeout(Duration::from_secs(600))
-    //     .body(data.to_string())
-    //     .send()
-    //     .await?;
-    // info!("> receive message: {}", id);
-    // let status_code = res.status().as_u16();
-    // if status_code != 200 {
-    //     let error_msg = res.text().await?;
-    //     log::error!("{}", error_msg);
-    //     return Err(Error::Custom {code: status_code, msg:String::from(error_msg)})
-    // }
-    // let mut stream = res.bytes_stream().eventsource();
-    // while let Some(chunk) = stream.try_next().await? {
-    //     let chunk = chunk.data;
-    //     if chunk == "[DONE]" {
-    //         return Ok(id)
-    //     } else {
-    //         let object:Value = serde_json::from_str(&chunk)?;
-    //         let delta: &Value = &object["choices"][0]["delta"];
-    //         let content = String::from(delta["content"].as_str().unwrap_or(""));
-    //         let role = String::from(delta["role"].as_str().unwrap_or(""));
-    //         let finish_reason: String = String::from(object["finish_reason"].as_str().unwrap_or(""));
-    //         info!("content: {} {}  {} {} {} ", content, delta["content"].as_str().unwrap_or(""), delta["role"].as_str().unwrap_or(""),
-    //         finish_reason, object["finish_reason"].as_str().unwrap_or(""));
-    //         let progress: ProgressPayload = ProgressPayload {id, detail:content, role, finish_reason};
-    //         progress.emit_progress(&handle);
-    //     }     //   " /Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/JZ20_TZB_CANC.c /Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/testJZ20_TZB_AllData.c")
-    // }         // &["/Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/JZ20_TZB_CANC.c", "/Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/testJZ20_TZB_AllData.c"])
-
+    let args_vec_input: Vec<&str> = parsed_contents.iter().map(AsRef::as_ref).collect();
+    
     info!("> receive message: {}", id);
     let finish_reason: String = "finish".to_string();
-    let mut child = Command::new("/Users/mac/Documents/work/htzr/unitest_agent/uapp/run_unitest.sh" )
-    .args( args)
-    .stdout(Stdio::piped())
-    .spawn()?;
+    let mut child = Command::new("/Users/mac/Documents/work/htzr/unitest_agent/uapp/run_unitest.sh")
+        .args(&[String::from(" --source-file-path")+ &parsed_contents[0],
+         String::from(" --test-file-path")+ &parsed_contents[1],
+        String::from(" --test-file-output-path")+ &parsed_contents[2], 
+        String::from(" --code-coverage-report-path")+ &parsed_contents[3],
+        String::from(" --test-command")+ &parsed_contents[4],
+        String::from(" --test-command-dir")+ &parsed_contents[5],
+        String::from(" --included-files")+ &parsed_contents[6],
+        String::from(" --coverage-type")+ &parsed_contents[7],
+        String::from(" --report-filepath")+ &parsed_contents[8],
+        String::from(" --desired-coverage")+ &parsed_contents[9],
+        String::from(" --max-iterations")+ &parsed_contents[10],
+        String::from(" --additional-instructions")+ &parsed_contents[11],
+        String::from(" --model")+ &parsed_contents[12]
+        ] 
+        )
+        // .args(&args_vec_input)
+        .stdout(Stdio::piped())
+        .spawn()?;
 
     use std::io::{BufRead, BufReader};
     
@@ -231,7 +200,7 @@ pub async fn fetch_unitest_api(
             detail: content.clone(), // Clone content to avoid moving it
             role,
             finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-        };
+        }; 
         progress.emit_progress(&handle);
     }
 

@@ -37,6 +37,8 @@ export default {
     clearChatConfirm: '是否清空会话?',
     exportImage: '保存会话到图片',
     exportImageConfirm: '是否将会话保存为图片?',
+    exportWord: '保存测试结果',
+    exportWordConfirm: '是否将结果保存为word文档?',
     exportSuccess: '保存成功',
     exportFailed: '保存失败',
     usingContext: '上下文模式',
