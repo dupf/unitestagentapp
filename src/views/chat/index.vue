@@ -271,7 +271,7 @@ const searchOptions = computed(() => {
 })
 // value反渲染key
 const renderOption = (option: { label: string }) => {
-  for (const i of promptTemplate.value) {
+  for (const i of promptTemplate.value as Array<{ key: string; value: string }>) {
     if (i.value === option.label)
       return [i.key]
   }
