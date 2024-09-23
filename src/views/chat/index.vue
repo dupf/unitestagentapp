@@ -43,7 +43,8 @@ const loading = ref<boolean>(false)
 // 添加PromptStore
 const promptStore = usePromptStore()
 // 使用storeToRefs，保证store修改后，联想部分能够重新渲染
-const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+// const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
+const { promptList: promptTemplate } = storeToRefs(promptStore)
 
 async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, index: number) {
   const option = getSessionConfig(uuid)
