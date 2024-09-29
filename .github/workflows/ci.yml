@@ -25,7 +25,7 @@ jobs:
       - name: Install pnpm
         run: |
           npm install -g pnpm
-          echo "pnpm --version"
+          pnpm --version
 
       - name: Install dependencies
         run: pnpm install
