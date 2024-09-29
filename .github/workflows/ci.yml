@@ -23,7 +23,9 @@ jobs:
           node-version: '18.x' # Specify your Node.js version
 
       - name: Install pnpm
-        run: npm install -g pnpm
+        run: |
+          npm install -g pnpm
+          echo "pnpm --version"
 
       - name: Install dependencies
         run: pnpm install
