@@ -42,3 +42,7 @@ jobs:
         with:
           name: binary-file
           path: ./output/unitestagent_bin # Adjust the path to your generated binary
+
+      - name: Share download link
+        run: |
+          echo "Artifact uploaded, download it from the Actions tab."
