@@ -17,11 +17,11 @@ declare namespace Chat {
 	}
 
 	interface ChatOptions {
-		apiKey: string
+		apiKey: string| null
 		proxy: string | null
-		model: string
-		systemMessage: string
-		temperature: number
+		model: string | null
+		systemMessage: string | null
+		temperature: number | null
 	}
 
 	// 一个聊天会话

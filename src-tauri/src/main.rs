@@ -39,9 +39,11 @@ fn main() {
   .plugin(log.build())
   .invoke_handler(tauri::generate_handler![
     cmd::gpt::fetch_chat_api,
+    // cmd::download::download_report,
     cmd::gpt::fetch_unitest_api,
     cmd::download::download_img,
-    cmd::download::download_report,
+    cmd::download::convert_html_to_word,
+    cmd::window::download_report,
     cmd::window::new_window
   ])
   .setup(builder::setup);

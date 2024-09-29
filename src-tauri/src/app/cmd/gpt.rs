@@ -8,9 +8,9 @@ use std::{ time::Duration, env::consts::OS };
 use log::{error, info};
 use std::process::{Command, Stdio};
 use futures::stream::StreamExt;
-use tokio_util::io::StreamReader;
+// use tokio_util::io::StreamReader;
 use tokio::io::AsyncBufReadExt;
-
+  use std::io::{BufRead, BufReader};
 type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
@@ -159,36 +159,50 @@ pub async fn fetch_unitest_api(
     let parsed_contents: Vec<String> = user_contents.iter()
         .flat_map(|content| content.split('|').map(String::from).collect::<Vec<String>>())
         .collect();
-    let args_vec_input: Vec<&str> = parsed_contents.iter().map(AsRef::as_ref).collect();
     
     info!("> receive message: {}", id);
     let finish_reason: String = "finish".to_string();
+    println!("parsed_contents: ===");
     let mut child = Command::new("/Users/mac/Documents/work/htzr/unitest_agent/uapp/run_unitest.sh")
-        .args(&[String::from(" --source-file-path")+ &parsed_contents[0],
-         String::from(" --test-file-path")+ &parsed_contents[1],
-        String::from(" --test-file-output-path")+ &parsed_contents[2], 
-        String::from(" --code-coverage-report-path")+ &parsed_contents[3],
-        String::from(" --test-command")+ &parsed_contents[4],
-        String::from(" --test-command-dir")+ &parsed_contents[5],
-        String::from(" --included-files")+ &parsed_contents[6],
-        String::from(" --coverage-type")+ &parsed_contents[7],
-        String::from(" --report-filepath")+ &parsed_contents[8],
-        String::from(" --desired-coverage")+ &parsed_contents[9],
-        String::from(" --max-iterations")+ &parsed_contents[10],
-        String::from(" --additional-instructions")+ &parsed_contents[11],
-        String::from(" --model")+ &parsed_contents[12]
-        ] 
-        )
-        // .args(&args_vec_input)
+        .args(&[
+            String::from(" --source-file-path") + &parsed_contents[0],
+            String::from(" --test-file-path") + &parsed_contents[1],
+            String::from(" --test-file-output-path") + &parsed_contents[2],
+            String::from(" --code-coverage-report-path") + &parsed_contents[3],
+            String::from(" --test-command") + &parsed_contents[4],
+            String::from(" --test-command-dir") + &parsed_contents[5],
+            String::from(" --included-files") + &parsed_contents[6],
+            String::from(" --coverage-type") + &parsed_contents[7],
+            String::from(" --report-filepath") + &parsed_contents[8],
+            String::from(" --desired-coverage") + &parsed_contents[9],
+            String::from(" --max-iterations") + &parsed_contents[10],
+            String::from(" --additional-instructions") + &parsed_contents[11],
+            String::from(" --model") + &parsed_contents[12]
+        ])
         .stdout(Stdio::piped())
         .spawn()?;
+        // String::from(" --test-command")+ &parsed_contents[4],
+        // String::from(" --test-command-dir")+ &parsed_contents[5],
+        // String::from(" --included-files")+ &parsed_contents[6],
+        // String::from(" --coverage-type")+ &parsed_contents[7],
+        // String::from(" --report-filepath")+ &parsed_contents[8],
+        // String::from(" --desired-coverage")+ &parsed_contents[9],
+        // String::from(" --max-iterations")+ &parsed_contents[10],
+        // String::from(" --additional-instructions")+ &parsed_contents[11],
+        // String::from(" --model")+ &parsed_contents[12]
+        // ] 
+        // )
+        // .args(&args_vec_input)
+        // .stdout(Stdio::piped())
+        // .spawn()?;
 
-    use std::io::{BufRead, BufReader};
+        println!("parsed_contents: {:?}", child);
+
     
     let stdout = child.stdout.take().expect("Failed to capture stdout");
     let reader = BufReader::new(stdout);
     let mut lines = reader.lines();
-    let mut content = String::new();
+    let mut content: String = String::new();
     while let Some(line) = lines.next().transpose()? {
         println!("{}", line);
         content.push_str(&line);

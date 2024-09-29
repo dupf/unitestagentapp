@@ -1,9 +1,10 @@
 <script setup lang='ts'>
 import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { tauri } from '@tauri-apps/api'
 import { NButton, useDialog, useMessage, useNotification } from 'naive-ui'
 import { save } from '@tauri-apps/api/dialog'
-import { invoke } from '@tauri-apps/api'
+
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
 import { useChat } from './hooks/useChat'
@@ -196,18 +197,31 @@ async function onRegenerate(index: number) {
 // }
 
 async function saveexportFile() {
-  // 模拟要保存的文件内容
-  const content = '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
+  // 模拟要保存的文件内
+  // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
+  // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
   // 调用保存对话框，用户选择保存路径
   const filePath = await save({
-    defaultPath: 'saved_file.doc',
+    defaultPath: 'resources/saved.docx',
   })
   if (filePath) {
     try {
-      ms.info('保存文件1')
+      ms.info('保存文件#####')
       // 调用 Rust 后端命令，保存文件
-      await invoke('download_img', { src_path: content, dest_path: filePath })
-      ms.info('保存文件2====')
+      try {
+        tauri.invoke('convert_html_to_word', {
+          // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
+          srcpath: 'resources/test_results.html',
+          destpath: filePath,
+
+        })
+      }
+      catch (error) {
+        console.error('调用 Rust 后端命令失败:', error)
+      }
+      // )
+
+      ms.info(filePath)
     }
     catch (error) {
       console.error('保存文件失败:', error)

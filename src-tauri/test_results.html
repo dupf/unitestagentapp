@@ -59,69 +59,17 @@
             </tr>
             
             <tr>
-                <td>test_get_CurrentTemp_cold_slope
-</td>
-                <td>等价类、边界值
-</td>
-                <td>测试 `get_CurrentTemp` 函数在 `V_temp_A` 大于等于 `V_TEMP25_A` 时的行为
-</td>
-                <td>TEST(testJZ20_TZB_AllData, test_get_CurrentTemp_cold_slope) {
-  // Mock ADC16_GetChannelConversionValue to return a value that will use the cold slope
-  uint32_t mock_adc_value = (uint32_t)((V_TEMP25_A + 0.001) / V_STEP_A);
-  float expected_temperature = 25.0 - ((V_TEMP25_A + 0.001 - V_TEMP25_A) / M_COLD_SLOPE);
-  float actual_temperature = get_CurrentTemp();
-  ASSERT_FLOAT_EQ(expected_temperature, actual_temperature);
-}
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>uint32_t ADC16_GetChannelConversionValue(uint32_t base, uint32_t group) {
-  return (uint32_t)((V_TEMP25_A + 0.001) / V_STEP_A);
-}
-</td>
-                <td>mock_adc_value = (uint32_t)((V_TEMP25_A + 0.001) / V_STEP_A)
-</td>
-                <td>expected_temperature = 25.0 - ((V_TEMP25_A + 0.001 - V_TEMP25_A) / M_COLD_SLOPE)
-</td>
-                <td>actual_temperature = get_CurrentTemp()
-</td>
-                <td>PASS
-</td>
-            </tr>
-            
-            <tr>
-                <td>test_get_CurrentTemp_hot_slope
-</td>
-                <td>等价类、边界值
-</td>
-                <td>测试 `get_CurrentTemp` 函数在 `V_temp_A` 小于 `V_TEMP25_A` 时的行为
-</td>
-                <td>TEST(testJZ20_TZB_AllData, test_get_CurrentTemp_hot_slope) {
-  // Mock ADC16_GetChannelConversionValue to return a value that will use the hot slope
-  uint32_t mock_adc_value = (uint32_t)((V_TEMP25_A - 0.001) / V_STEP_A);
-  float expected_temperature = 25.0 - ((V_TEMP25_A - 0.001 - V_TEMP25_A) / M_HOT_SLOPE);
-  float actual_temperature = get_CurrentTemp();
-  ASSERT_FLOAT_EQ(expected_temperature, actual_temperature);
-}
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>uint32_t ADC16_GetChannelConversionValue(uint32_t base, uint32_t group) {
-  return (uint32_t)((V_TEMP25_A - 0.001) / V_STEP_A);
-}
-</td>
-                <td>mock_adc_value = (uint32_t)((V_TEMP25_A - 0.001) / V_STEP_A)
-</td>
-                <td>expected_temperature = 25.0 - ((V_TEMP25_A - 0.001 - V_TEMP25_A) / M_HOT_SLOPE)
-</td>
-                <td>actual_temperature = get_CurrentTemp()
-</td>
-                <td>PASS
-</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
             </tr>
             
 

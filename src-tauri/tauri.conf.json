@@ -7,7 +7,7 @@
     "distDir": "../dist"
   },
   "package": {
-    "productName": "UnitestAgent",
+    "productName": "unitestagent",
     "version": "0.1.0"
   },
   "tauri": {
@@ -27,8 +27,10 @@
         "all": true,
         "request": true,
         "scope": [
-          "https://api.openai.com/v1/*"
+          "http://**",
+          "https://**"
         ]
+
       },
       "shell": {
         "open": true
@@ -56,7 +58,7 @@
       "category": "DeveloperTool",
       "copyright": "",
       "icon": [
-        "icons/32x32.png", 
+        "icons/32x32.png",
         "icons/128x128.png",
         "icons/128x128@2x.png",
         "icons/icon.ico"
@@ -65,8 +67,8 @@
         "depends": []
       },
       "externalBin": [],
-      "identifier": "me.honglu.chatgpt",
-      "longDescription": "UnitestAgent Desktop Application",
+      "identifier": "unitestagent",
+      "longDescription": "unitestagent Desktop Application",
       "macOS": {
         "entitlements": null,
         "exceptionDomain": "",
@@ -74,8 +76,10 @@
         "providerShortName": null,
         "signingIdentity": null
       },
-      "resources": [],
-      "shortDescription": "UnitestAgent",
+      "resources": [
+        "resources/**/*"
+      ],
+      "shortDescription": "unitestagent",
       "targets": "all",
       "windows": {
         "certificateThumbprint": null,
