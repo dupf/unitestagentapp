@@ -1,17 +1,18 @@
 import type { Ref } from 'vue'
 import { nextTick, ref } from 'vue'
 
-type ScrollElement = HTMLDivElement | null
+// 修改 ScrollElement 的类型定义
+type ScrollElement = HTMLDivElement
 
 interface ScrollReturn {
-  scrollRef: Ref<ScrollElement>
+  scrollRef: Ref<ScrollElement | null>
   scrollToBottom: () => Promise<void>
   scrollToTop: () => Promise<void>
   scrollToBottomIfAtBottom: () => Promise<void>
 }
 
 export function useScroll(): ScrollReturn {
-  const scrollRef = ref<ScrollElement>(null)
+  const scrollRef = ref<ScrollElement | null>(null)
 
   const scrollToBottom = async () => {
     await nextTick()
@@ -34,9 +35,8 @@ export function useScroll(): ScrollReturn {
         scrollRef.value.scrollTop = scrollRef.value.scrollHeight
     }
   }
-
   return {
-    scrollRef,
+    scrollRef: scrollRef as Ref<HTMLDivElement | null>,
     scrollToBottom,
     scrollToTop,
     scrollToBottomIfAtBottom,
