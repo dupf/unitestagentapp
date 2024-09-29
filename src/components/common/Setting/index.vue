@@ -1,5 +1,5 @@
 <script setup lang='ts'>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { NModal } from 'naive-ui'
 
 const props = defineProps<Props>()
@@ -14,7 +14,7 @@ interface Emit {
   (e: 'update:visible', visible: boolean): void
 }
 
-const active = ref('User')
+// const active = ref('User')
 
 const show = computed({
   get() {
