@@ -36,7 +36,7 @@ export function useScroll(): ScrollReturn {
   }
 
   return {
-    scrollRef,
+    scrollRef: scrollRef as Ref<ScrollElement>,
     scrollToBottom,
     scrollToTop,
     scrollToBottomIfAtBottom,
