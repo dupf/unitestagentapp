@@ -46,12 +46,6 @@ impl UnitestAgent {
 
         // let report_generator = ReportGenerator::new(code_coverage_report_path, test_command, test_command_dir);
         
-        
-
-
-
-
-
 
         // UnitestAgentTestGenerator::new already has all necessary arguments
         // No need to call it again or add more arguments
