@@ -42,6 +42,14 @@ declare namespace Chat {
 		content: string
 	}
 
+//  Unitest  Option 
+	interface UnitestOptions {
+		// apiKey: string| null
+		// proxy: string | null
+		model: string | null
+		// systemMessage: string | null
+		// temperature: number | null
+	}
 
 	interface UnitestMessage {
 		sourcefilePath: string

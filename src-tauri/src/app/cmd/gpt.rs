@@ -1,16 +1,21 @@
-use tauri::{AppHandle, Manager};
-use reqwest::{self, Url};
-use eventsource_stream::{Eventsource, EventStreamError};
-use serde_json::{json, Value};
-use serde::{ser::Serializer, Serialize, Deserialize};
-use futures::{TryStreamExt};
-use std::{ time::Duration, env::consts::OS };
-use log::{error, info};
-use std::process::{Command, Stdio};
+use eventsource_stream::{EventStreamError, Eventsource};
 use futures::stream::StreamExt;
+use futures::TryStreamExt;
+use log::{error, info};
+use reqwest::{self, Url};
+use serde::{ser::Serializer, Deserialize, Serialize};
+use serde_json::{json, Value};
+use std::process::{Command, Stdio};
+use std::{env::consts::OS, time::Duration};
+use tauri::{AppHandle, Manager};
 // use tokio_util::io::StreamReader;
 use tokio::io::AsyncBufReadExt;
-  use std::io::{BufRead, BufReader};
+
+use tauri::api::path::resource_dir;
+
+// use crate::api::path::resource_dir;
+
+use std::io::{BufRead, BufReader};
 type Result<T> = std::result::Result<T, Error>;
 
 #[derive(Debug, thiserror::Error)]
@@ -24,7 +29,7 @@ pub enum Error {
     #[error(transparent)]
     Stream(#[from] EventStreamError<reqwest::Error>),
     #[error("Custom Error: (code: {code:?}, message: {msg:?})")]
-    Custom{code: u16, msg: String}
+    Custom { code: u16, msg: String },
 }
 
 impl Serialize for Error {
@@ -53,7 +58,7 @@ impl ProgressPayload {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Message {
     pub role: String,
-    pub content: String
+    pub content: String,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -66,6 +71,16 @@ pub struct FetchOption {
     pub temperature: f32,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+#[allow(non_snake_case)]
+pub struct FetchUnitestOption {
+    // pub proxy: Option<String>,
+    // pub host: Option<String>,
+    // pub apiKey: Option<String>,
+    pub model: Option<String>,
+    // pub temperature: Option<f32>
+}
+
 #[tauri::command]
 pub async fn fetch_chat_api(
     handle: AppHandle,
@@ -73,97 +88,142 @@ pub async fn fetch_chat_api(
     messages: Vec<Message>,
     option: FetchOption,
 ) -> Result<u64> {
-    
     let data = json!({
         "model": option.model,
         "messages": messages,
         "temperature": option.temperature,
         "stream": true,
     });
-    log::info!("> send message: length: {}, option: {:?},", messages.len(), option);
+    log::info!(
+        "> send message: length: {}, option: {:?},",
+        messages.len(),
+        option
+    );
     let proxy_str = option.proxy.unwrap_or(String::from(""));
 
-    let client : reqwest::Client = {
+    let client: reqwest::Client = {
         log::info!("proxy is: {}", proxy_str);
         let mut client_builder = reqwest::Client::builder();
-        if proxy_str.len()>0 {
+        if proxy_str.len() > 0 {
             let proxy = reqwest::Proxy::all(proxy_str).unwrap();
             client_builder = client_builder.proxy(proxy);
         }
         client_builder.build().unwrap()
     };
 
-    let api_url = Url::parse(&option.host).unwrap().join("/v1/chat/completions").unwrap().as_str().to_owned();
+    let api_url = Url::parse(&option.host)
+        .unwrap()
+        .join("/v1/chat/completions")
+        .unwrap()
+        .as_str()
+        .to_owned();
 
-    let res = client.post(api_url)
+    let res = client
+        .post(api_url)
         .header("Content-Type", "application/json")
         .header("Authorization", format!("Bearer {}", option.apiKey))
-        .header(reqwest::header::USER_AGENT, format!("ChatGPT-Tauri ({})", OS))
+        .header(
+            reqwest::header::USER_AGENT,
+            format!("ChatGPT-Tauri ({})", OS),
+        )
         .timeout(Duration::from_secs(600))
         .body(data.to_string())
         .send()
         .await?;
     info!("> receive message: {}", id);
-    
+
     let status_code = res.status().as_u16();
     if status_code != 200 {
         let error_msg = res.text().await?;
         log::error!("{}", error_msg);
-        return Err(Error::Custom {code: status_code, msg:String::from(error_msg)})
+        return Err(Error::Custom {
+            code: status_code,
+            msg: String::from(error_msg),
+        });
     }
 
     let mut stream = res.bytes_stream().eventsource();
     while let Some(chunk) = stream.try_next().await? {
         let chunk = chunk.data;
         if chunk == "[DONE]" {
-            return Ok(id)
+            return Ok(id);
         } else {
-            let object:Value = serde_json::from_str(&chunk)?;
+            let object: Value = serde_json::from_str(&chunk)?;
             let delta: &Value = &object["choices"][0]["delta"];
             let content = String::from(delta["content"].as_str().unwrap_or(""));
             let role = String::from(delta["role"].as_str().unwrap_or(""));
             let finish_reason = String::from(object["finish_reason"].as_str().unwrap_or(""));
-            let progress = ProgressPayload {id, detail:content, role, finish_reason};
+            let progress = ProgressPayload {
+                id,
+                detail: content,
+                role,
+                finish_reason,
+            };
             progress.emit_progress(&handle);
         }
     }
     Ok(id)
 }
 
-
 #[tauri::command]
 pub async fn fetch_unitest_api(
     handle: AppHandle,
     id: u64,
     messages: Vec<Message>,
-    option: FetchOption,
+    option: FetchUnitestOption,
 ) -> Result<u64> {
-
-    let data = json!({
-        "model": option.model,
-        "messages": messages,
-        "temperature": option.temperature,
-        "stream": true,
-    });
+    // let data = json!({
+    //     "model": option.model,
+    //     "messages": messages,
+    //     "stream": true,
+    // });
     // println!("messages: {}", messages);
-
     // log::info!("> send message: {:#?}, length: {}, option: {:?},", messages, messages.len(), option);
-    
-    let user_contents: Vec<String> = messages.iter()
+
+    log::info!(
+        "> send message: {:#?}, length: {}, option: {:?},",
+        messages,
+        messages.len(),
+        option.model
+    );
+    let user_contents: Vec<String> = messages
+        .iter()
         .filter(|message| message.role == "user")
         .map(|message| message.content.clone())
         .collect();
 
     log::info!("User contents: {:?}", user_contents);
     // Parse user_contents
-    let parsed_contents: Vec<String> = user_contents.iter()
-        .flat_map(|content| content.split('|').map(String::from).collect::<Vec<String>>())
+    let parsed_contents: Vec<String> = user_contents
+        .iter()
+        .flat_map(|content| {
+            content
+                .split('|')
+                .map(String::from)
+                .collect::<Vec<String>>()
+        })
         .collect();
-    
-    info!("> receive message: {}", id);
+    log::info!("> receive message: {}", id);
+
+    // let package_info = tauri::PackageInfo(&handle);
+    // let env_info = tauri::env(&handle);
+    use tauri::Env;
+    use tauri::PackageInfo;
+
+    let package_info: PackageInfo = handle.package_info().clone();
+    let env_info: Env = handle.env().clone();
+
+    let resource_dir_path = resource_dir(&package_info, &env_info);
+    let unitest_agent_path = resource_dir_path
+        .unwrap()
+        .join("x64/unitest_agent_bin/unitest_agent_bin");
+
+    log::info!("unitest_agent_path: {:?}", unitest_agent_path);
+
     let finish_reason: String = "finish".to_string();
     println!("parsed_contents: ===");
-    let mut child = Command::new("/Users/mac/Documents/work/htzr/unitest_agent/uapp/run_unitest.sh")
+
+    let mut child = Command::new(unitest_agent_path)
         .args(&[
             String::from(" --source-file-path") + &parsed_contents[0],
             String::from(" --test-file-path") + &parsed_contents[1],
@@ -177,28 +237,13 @@ pub async fn fetch_unitest_api(
             String::from(" --desired-coverage") + &parsed_contents[9],
             String::from(" --max-iterations") + &parsed_contents[10],
             String::from(" --additional-instructions") + &parsed_contents[11],
-            String::from(" --model") + &parsed_contents[12]
+            String::from(" --model") + &parsed_contents[12],
         ])
         .stdout(Stdio::piped())
         .spawn()?;
-        // String::from(" --test-command")+ &parsed_contents[4],
-        // String::from(" --test-command-dir")+ &parsed_contents[5],
-        // String::from(" --included-files")+ &parsed_contents[6],
-        // String::from(" --coverage-type")+ &parsed_contents[7],
-        // String::from(" --report-filepath")+ &parsed_contents[8],
-        // String::from(" --desired-coverage")+ &parsed_contents[9],
-        // String::from(" --max-iterations")+ &parsed_contents[10],
-        // String::from(" --additional-instructions")+ &parsed_contents[11],
-        // String::from(" --model")+ &parsed_contents[12]
-        // ] 
-        // )
-        // .args(&args_vec_input)
-        // .stdout(Stdio::piped())
-        // .spawn()?;
 
-        println!("parsed_contents: {:?}", child);
+    println!("parsed_contents: {:?}", child);
 
-    
     let stdout = child.stdout.take().expect("Failed to capture stdout");
     let reader = BufReader::new(stdout);
     let mut lines = reader.lines();
@@ -207,16 +252,16 @@ pub async fn fetch_unitest_api(
         println!("{}", line);
         content.push_str(&line);
         content.push('\n'); // Add newline character after each line
-
         let role: String = "user".to_string();
+
         let progress: ProgressPayload = ProgressPayload {
             id,
             detail: content.clone(), // Clone content to avoid moving it
             role,
             finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-        }; 
+        };
         progress.emit_progress(&handle);
     }
 
     Ok(id)
-    }
+}

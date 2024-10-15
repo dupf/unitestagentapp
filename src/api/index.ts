@@ -69,7 +69,8 @@ export async function fetchChatAPIProcess(
 
 export async function fetchUnitestAPIProcess(
   messages: Chat.RequestMessage[],
-  option: Chat.ChatOptions,
+  // option: Chat.ChatOptions,
+  option: Chat.UnitestOptions,
   progressHandler?: (detail: string, role: string) => void,
   errorHandle?: (err: Error) => void,
   signal?: GenericAbortSignal,
