@@ -196,7 +196,7 @@ pub async fn fetch_unitest_api(
     // Parse user_contents
     let parsed_contents: Vec<String> = user_contents
         .iter()
-        .flat_map(|content| {
+        .flat_map(|content: &String| {
             content
                 .split('|')
                 .map(String::from)
@@ -214,33 +214,56 @@ pub async fn fetch_unitest_api(
     let env_info: Env = handle.env().clone();
 
     let resource_dir_path = resource_dir(&package_info, &env_info);
+    
     let unitest_agent_path = resource_dir_path
         .unwrap()
-        .join("x64/unitest_agent_bin/unitest_agent_bin");
+        .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
 
     log::info!("unitest_agent_path: {:?}", unitest_agent_path);
 
     let finish_reason: String = "finish".to_string();
-    println!("parsed_contents: ===");
+    // println!("parsed_contents: ===");
 
-    let mut child = Command::new(unitest_agent_path)
-        .args(&[
-            String::from(" --source-file-path") + &parsed_contents[0],
-            String::from(" --test-file-path") + &parsed_contents[1],
-            String::from(" --test-file-output-path") + &parsed_contents[2],
-            String::from(" --code-coverage-report-path") + &parsed_contents[3],
-            String::from(" --test-command") + &parsed_contents[4],
-            String::from(" --test-command-dir") + &parsed_contents[5],
-            String::from(" --included-files") + &parsed_contents[6],
-            String::from(" --coverage-type") + &parsed_contents[7],
-            String::from(" --report-filepath") + &parsed_contents[8],
-            String::from(" --desired-coverage") + &parsed_contents[9],
-            String::from(" --max-iterations") + &parsed_contents[10],
-            String::from(" --additional-instructions") + &parsed_contents[11],
-            String::from(" --model") + &parsed_contents[12],
-        ])
+    let mut child: Command = Command::new(unitest_agent_path);
+    let args = [
+            // String::from("  --source-file-path ") + &parsed_contents[0],
+            // String::from(" --test-file-path ") + &parsed_contents[1],
+            // String::from(" --test-file-output-path ") + &parsed_contents[2],
+            // String::from(" --code-coverage-report-path") + &parsed_contents[3],
+            // String::from(" --test-command ") + &parsed_contents[4],
+            // String::from(" --test-command-dir ") + &parsed_contents[5],
+            // String::from(" --included-files  ") + &parsed_contents[6],
+            // String::from(" --coverage-type ") + &parsed_contents[7],
+            // String::from(" --report-filepath ") + &parsed_contents[8],
+            // String::from(" --desired-coverage ") + &parsed_contents[9],
+            // String::from(" --max-iterations ") + &parsed_contents[10],
+            // String::from(" --additional-instructions ") + &parsed_contents[11],
+            // String::from(" --model ") + &parsed_contents[12],
+            ("--source-file-path", &parsed_contents[0]),
+            ("--test-file-path", &parsed_contents[1]),
+            ("--test-file-output-path", &parsed_contents[2]),
+            ("--code-coverage-report-path", &parsed_contents[3]),
+            ("--test-command", &parsed_contents[4]),
+            ("--test-command-dir", &parsed_contents[5]),
+            ("--included-files", &parsed_contents[6]),
+            ("--coverage-type", &parsed_contents[7]),
+            ("--report-filepath", &parsed_contents[8]),
+            ("--desired-coverage", &parsed_contents[9]),
+            ("--max-iterations", &parsed_contents[10]),
+            ("--additional-instructions", &parsed_contents[11]),
+            ("--model", &parsed_contents[12]),
+        ];
+        for (arg, value) in args.iter() {
+            if !value.is_empty() {
+                child.arg(arg);
+                child.arg(value);
+            }
+        }
+        let mut child = child
         .stdout(Stdio::piped())
         .spawn()?;
+        // .stdout(Stdio::piped())
+        // .spawn()?;
 
     println!("parsed_contents: {:?}", child);
 

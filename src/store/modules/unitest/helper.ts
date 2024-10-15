@@ -12,8 +12,8 @@ export interface UnitestConfig {
   sourcefilePath: string
   testfilePath: string
   testfileOutputPath: string
-  codecoveragereportPath: string | null
-  testCommand: string | null
+  codecoveragereportPath: string | ''
+  testCommand: string | ''
   testCommandDir: string | null
   includedFiles: string | null
   coverageType: string | null
