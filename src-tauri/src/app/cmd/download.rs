@@ -21,10 +21,8 @@ pub async fn convert_html_to_word(apphandle: tauri::AppHandle, srcpath: String, 
     // 检查源文件是否存在
 //     let package_info = tauri::api::package_info(&apphandle);
 //  let env_info = tauri::api::env(&apphandle);
-  
 //     let resource_dir_path = resource_dir(&package_info, &env_info);
 //     let srcpath2 = resource_dir_path.unwrap().join(srcpath);
-
     let srcpath2 = apphandle
         .path_resolver()
         .resolve_resource(srcpath)
@@ -34,11 +32,14 @@ pub async fn convert_html_to_word(apphandle: tauri::AppHandle, srcpath: String, 
   // }
     info!("srcpath2: {}", srcpath2.to_str().unwrap());
     let mut file = File::open(srcpath2).expect("Failed to open HTML file");
-    let mut html_content = String::new();
+    let mut html_content: String = String::new();
     file.read_to_string(&mut html_content)
         .expect("Failed to read HTML file");
  
 
+
+
+        
     // Convert HTML table to plain text (you can also extract it differently depending on the complexity of the HTML)
     let table_text = from_read(html_content.as_bytes(), 80);
     // Create a new Word document

@@ -1,0 +1,63 @@
+system="""\
+"""
+
+user="""\
+## Overview
+You are a code assistant that accepts a {{ language }} source file and a corresponding defect report. 
+Your goal is to analyze the provided code and identify potential defects or issues that may affect functionality, performance, or security.
+
+Additional guidelines:
+- Carefully analyze the provided code. Understand its logic, flow, and any potential pitfalls or anti-patterns.
+- Identify any bugs, security vulnerabilities, or areas that may lead to unexpected behavior.
+- Suggest fixes for the identified defects, including code snippets where appropriate.
+- Ensure that all suggestions maintain the original functionality and do not introduce new issues.
+
+## Source File
+Here is the source file that you will be analyzing, called `{{ source_file_name }}`.
+=========
+{{ source_file_numbered|trim }}
+=========
+
+## Defect Report
+Here is the report outlining known issues with the code, called `{{ defect_report_name }}`.
+=========
+{{ defect_report| trim }}
+=========
+
+{%- if additional_includes_section|trim %}
+
+{{ additional_includes_section|trim }}
+{% endif %}
+
+{%- if additional_instructions_text|trim  %}
+
+{{ additional_instructions_text|trim }}
+{% endif %}
+
+## Response
+The output must be a YAML object equivalent to type $DefectAnalysis, according to the following Pydantic definitions:
+=====
+class Defect(BaseModel):
+    defect_description: str = Field(description="Description of the identified defect or issue.")
+    suggested_fix: str = Field(description="Code snippet or explanation of how to fix the defect.")
+    severity: str = Field(description="Severity of the defect, such as 'low', 'medium', 'high', or 'critical'.")
+
+class DefectAnalysis(BaseModel):
+    language: str = Field(description="The programming language of the source code.")
+    identified_defects: List[Defect] = Field(min_items=1, description="A list of identified defects and suggested fixes.")
+=====
+
+Example output:
+```yaml
+language: {{ language }}
+identified_defects:
+- defect_description: |
+    Function `foo` does not handle division by zero, which could lead to runtime errors.
+  suggested_fix: |
+    Add a check for division by zero before performing the division.
+  severity: high
+- defect_description: |
+    The variable `x` is not initialized before use, which may lead to unpredictable behavior.
+  suggested_fix: |
+    Initialize `x` to a default value at the beginning of the function.
+  severity: medium

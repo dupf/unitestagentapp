@@ -13,7 +13,6 @@ class UnitestAgent:
         self.args = args
         self._validate_paths()
         self._duplicate_test_file()
-        # print(args.source_file_path)
         # self.logger = CustomLogger.get_logger(__name__)
         self.logger = CustomLogger.get_logger(__name__)
         self.test_gen =UnitestAgentTestGenerator(
@@ -28,18 +27,35 @@ class UnitestAgent:
             desired_coverage=args.desired_coverage,
             llm_model=args.model,
             api_base=args.api_base,
+            additional_instructions=args.additional_instructions,
+            use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
+            isremote=args.isremote,
             # use_report_cover
         )
 
+    # def _validate_paths(self):
+    #     if not os.path.isfile(self.args.source_file_path):
+    #         raise FileNotFoundError(
+    #             f"Source file not found at {self.args.source_file_path}"
+    #         )
+    #     if not os.path.isfile(self.args.test_file_path):
+    #         raise FileNotFoundError(
+    #             f"Test file not found at {self.args.test_file_path}"
+    #         )
+
     def _validate_paths(self):
         if not os.path.isfile(self.args.source_file_path):
-            raise FileNotFoundError(
-                f"Source file not found at {self.args.source_file_path}"
-            )
+            # 创建源文件
+            with open(self.args.source_file_path, 'w') as f:
+                f.write('')
+            print(f"Source file not found. Created an empty file at {self.args.source_file_path}")
+
         if not os.path.isfile(self.args.test_file_path):
-            raise FileNotFoundError(
-                f"Test file not found at {self.args.test_file_path}"
-            )
+            # 创建测试文件
+            with open(self.args.test_file_path, 'w') as f:
+                f.write('')
+            print(f"Test file not found. Created an empty file at {self.args.test_file_path}")
+
 
     def _duplicate_test_file(self):
         if self.args.test_file_output_path != "":
@@ -50,12 +66,8 @@ class UnitestAgent:
     def run(self):
         iteration_count = 0
         test_results_list = []
-
         self.test_gen.initial_test_suite_analysis()
-
         while (
-            # self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100)
-            # and 
             iteration_count < self.args.max_iterations
         ):
             # self.logger.info(
@@ -64,31 +76,27 @@ class UnitestAgent:
             # self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
             # generated_tests_dict = self.test_gen.generate_tests(max_tokens=40960)
             generated_tests_dict = self.test_gen.generate_tests_htzr_cn(max_tokens=4096)
-            # print("===== generated_tests_dict output =====",generated_tests_dict)
-            # for generated_test in generated_tests_dict.get("new_tests", []):
-            #     test_result = self.test_gen.validate_test_immediately(
-            #         generated_test, generated_tests_dict, self.args.run_tests_multiple_times
-            #     )
-            #     # print(test_result)
-            #     test_results_list.append(test_result)
             for generated_test in generated_tests_dict.get("new_tests", []):
-                # print("===== generated_test output =====",generated_test)
-                # if test_results_list['测试用例编号'] != generated_test['测试用例编号']:
-                #     test_results_list.append(generated_test)
+                
+                test_result = self.test_gen.validate_test_immediately(
+                    generated_test, self.args.run_tests_multiple_times
+                )
+                # test_results_list.append(test_result)
+                
+                
                 if len(test_results_list) == 0:
                     test_results_list.append(generated_test)
                 else:
                     for list_test in test_results_list:
                         if list_test['测试用例编号'] == generated_test['测试用例编号']:
-                            print("===== list_test output =====",list_test)
+                            # print("===== list_test output =====",list_test)
                             break
                     else:
                         test_results_list.append(generated_test)
+            
             iteration_count += 1
-
             # if self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100):
             #     self.test_gen.run_coverage()
-
         if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
             self.logger.info(
                 f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations."
@@ -108,7 +116,7 @@ class UnitestAgent:
         self.logger.info(
             f"Total number of output tokens used for LLM model {self.test_gen.llm_caller.model}: {self.test_gen.total_output_token_count}"
         )
-        # ReportsGenerator.generate_report(test_results_list, self.args.report_filepath)
+        # print("===== test_results_list output =====",test_results_list)
         ReportGenerator_htzr_cn.generate_report(test_results_list, self.args.report_filepath)
 
 

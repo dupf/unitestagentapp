@@ -14,7 +14,7 @@ use tokio::io::AsyncBufReadExt;
 use tauri::api::path::resource_dir;
 
 // use crate::api::path::resource_dir;
-
+use std::path::PathBuf;
 use std::io::{BufRead, BufReader};
 type Result<T> = std::result::Result<T, Error>;
 
@@ -172,14 +172,7 @@ pub async fn fetch_unitest_api(
     messages: Vec<Message>,
     option: FetchUnitestOption,
 ) -> Result<u64> {
-    // let data = json!({
-    //     "model": option.model,
-    //     "messages": messages,
-    //     "stream": true,
-    // });
-    // println!("messages: {}", messages);
-    // log::info!("> send message: {:#?}, length: {}, option: {:?},", messages, messages.len(), option);
-
+    
     log::info!(
         "> send message: {:#?}, length: {}, option: {:?},",
         messages,
@@ -215,30 +208,38 @@ pub async fn fetch_unitest_api(
 
     let resource_dir_path = resource_dir(&package_info, &env_info);
     
-    let unitest_agent_path = resource_dir_path
-        .unwrap()
-        .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
+    // let unitest_agent_path = resource_dir_path
+    //     .unwrap()
+    //     .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
+    let os: &str = std::env::consts::OS;
+    println!("Current operating system: {}", os);
+    let unitest_agent_path: PathBuf;
 
+    match os {
+        "windows" => {
+            unitest_agent_path = resource_dir_path
+                .unwrap()
+                .join("resources/x64_win/unitest_agent_bin/unitest_agent_bin");
+        },  
+        "macos" => {
+        unitest_agent_path = resource_dir_path
+                .unwrap()
+                .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
+        },
+        _ => {
+            panic!("Unsupported operating system: {}", os);
+     }
+     }
+
+    
     log::info!("unitest_agent_path: {:?}", unitest_agent_path);
+
 
     let finish_reason: String = "finish".to_string();
     // println!("parsed_contents: ===");
 
     let mut child: Command = Command::new(unitest_agent_path);
     let args = [
-            // String::from("  --source-file-path ") + &parsed_contents[0],
-            // String::from(" --test-file-path ") + &parsed_contents[1],
-            // String::from(" --test-file-output-path ") + &parsed_contents[2],
-            // String::from(" --code-coverage-report-path") + &parsed_contents[3],
-            // String::from(" --test-command ") + &parsed_contents[4],
-            // String::from(" --test-command-dir ") + &parsed_contents[5],
-            // String::from(" --included-files  ") + &parsed_contents[6],
-            // String::from(" --coverage-type ") + &parsed_contents[7],
-            // String::from(" --report-filepath ") + &parsed_contents[8],
-            // String::from(" --desired-coverage ") + &parsed_contents[9],
-            // String::from(" --max-iterations ") + &parsed_contents[10],
-            // String::from(" --additional-instructions ") + &parsed_contents[11],
-            // String::from(" --model ") + &parsed_contents[12],
             ("--source-file-path", &parsed_contents[0]),
             ("--test-file-path", &parsed_contents[1]),
             ("--test-file-output-path", &parsed_contents[2]),
@@ -252,6 +253,7 @@ pub async fn fetch_unitest_api(
             ("--max-iterations", &parsed_contents[10]),
             ("--additional-instructions", &parsed_contents[11]),
             ("--model", &parsed_contents[12]),
+            ("--isremote", &parsed_contents[13]),
         ];
         for (arg, value) in args.iter() {
             if !value.is_empty() {
@@ -266,7 +268,6 @@ pub async fn fetch_unitest_api(
         // .spawn()?;
 
     println!("parsed_contents: {:?}", child);
-
     let stdout = child.stdout.take().expect("Failed to capture stdout");
     let reader = BufReader::new(stdout);
     let mut lines = reader.lines();

@@ -52,7 +52,7 @@ class LLMCaller:
         else:
             messages = [
                 {"role": "system", "content": prompt["system"]},
-                {"role": "user", "content": prompt["user"]},
+                {"role": "user",   "content": prompt["user"]},
             ]
 
         # Default Completion parameters

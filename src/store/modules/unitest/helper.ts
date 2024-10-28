@@ -22,6 +22,7 @@ export interface UnitestConfig {
   maxIterations: number | null
   additionalInstructions: string | null
   model: string | null
+  isRemote: boolean | null
 }
 
 export interface UnitestState {
@@ -49,6 +50,7 @@ export function defaultSetting(): UnitestState {
       maxIterations: 2,
       additionalInstructions: '',
       model: 'deepseek/deepseek-coder',
+      isRemote: true,
     },
   }
 }

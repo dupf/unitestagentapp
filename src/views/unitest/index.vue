@@ -196,20 +196,54 @@ async function onRegenerate(index: number) {
 //   })
 // }
 
+// async function saveexportFile() {
+//   // 模拟要保存的文件内
+//   // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
+//   // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
+//   // 调用保存对话框，用户选择保存路径
+//   const filePath = await save({
+//     defaultPath: 'resources/saved.docx',
+//   })
+//   if (filePath) {
+//     try {
+//       ms.info('保存文件#####')
+//       // 调用 Rust 后端命令，保存文件
+//       try {
+//         tauri.invoke('convert_html_to_word', {
+//           // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
+//           srcpath: 'resources/test_results.html',
+//           destpath: filePath,
+
+//         })
+//       }
+//       catch (error) {
+//         console.error('调用 Rust 后端命令失败:', error)
+//       }
+//       ms.info(filePath)
+//     }
+//     catch (error) {
+//       console.error('保存文件失败:', error)
+//     }
+//   }
+//   else {
+//     alert('未选择保存路径')
+//   }
+// }
+
 async function saveexportFile() {
   // 模拟要保存的文件内
   // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
   // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
   // 调用保存对话框，用户选择保存路径
   const filePath = await save({
-    defaultPath: 'resources/saved.docx',
+    defaultPath: 'resources/saved.html',
   })
   if (filePath) {
     try {
       ms.info('保存文件#####')
       // 调用 Rust 后端命令，保存文件
       try {
-        tauri.invoke('convert_html_to_word', {
+        tauri.invoke('download_report', {
           // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
           srcpath: 'resources/test_results.html',
           destpath: filePath,
@@ -219,8 +253,6 @@ async function saveexportFile() {
       catch (error) {
         console.error('调用 Rust 后端命令失败:', error)
       }
-      // )
-
       ms.info(filePath)
     }
     catch (error) {

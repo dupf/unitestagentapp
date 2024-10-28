@@ -1,0 +1,122 @@
+import shutil
+import sys
+import os
+# sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# import tempfile
+from .CustomLogger import CustomLogger
+from unitest_agent.ReportGenerator_htzr_cn import ReportGenerator_htzr_cn
+from unitest_agent.UnitestAgentTestGenerator import UnitestAgentTestGenerator
+
+class UnitestAgent:
+    def __init__(self, args):
+        self.args = args
+        self._validate_paths()
+        self._duplicate_test_file()
+        # self.logger = CustomLogger.get_logger(__name__)
+        self.logger = CustomLogger.get_logger(__name__)
+        self.test_gen =UnitestAgentTestGenerator(
+            source_file_path=args.source_file_path,
+            test_file_path=args.test_file_path,
+            code_coverage_report_path=args.code_coverage_report_path,
+            test_command=args.test_command,
+            test_command_dir=args.test_command_dir,
+            included_files=args.included_files,
+            coverage_type=args.coverage_type,
+            # report_filepath=args.report_filepath,  
+            desired_coverage=args.desired_coverage,
+            llm_model=args.model,
+            api_base=args.api_base,
+            additional_instructions=args.additional_instructions,
+            use_report_coverage_feature_flag=args.use_report_coverage_feature_flag,
+            isremote=args.isremote,
+            # use_report_cover
+        )
+
+    # def _validate_paths(self):
+    #     if not os.path.isfile(self.args.source_file_path):
+    #         raise FileNotFoundError(
+    #             f"Source file not found at {self.args.source_file_path}"
+    #         )
+    #     if not os.path.isfile(self.args.test_file_path):
+    #         raise FileNotFoundError(
+    #             f"Test file not found at {self.args.test_file_path}"
+    #         )
+
+    def _validate_paths(self):
+        if not os.path.isfile(self.args.source_file_path):
+            # 创建源文件
+            with open(self.args.source_file_path, 'w') as f:
+                f.write('')
+            print(f"Source file not found. Created an empty file at {self.args.source_file_path}")
+
+        if not os.path.isfile(self.args.test_file_path):
+            # 创建测试文件
+            with open(self.args.test_file_path, 'w') as f:
+                f.write('')
+            print(f"Test file not found. Created an empty file at {self.args.test_file_path}")
+
+
+    def _duplicate_test_file(self):
+        if self.args.test_file_output_path != "":
+            shutil.copy(self.args.test_file_path, self.args.test_file_output_path)
+        else:
+            self.args.test_file_output_path = self.args.test_file_path
+
+    def run(self):
+        iteration_count = 0
+        test_results_list = []
+        self.test_gen.initial_test_suite_analysis()
+        while (
+            iteration_count < self.args.max_iterations
+        ):
+            # self.logger.info(
+            #     f"Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+            # )
+            # self.logger.info(f"Desired Coverage: {self.test_gen.desired_coverage}%")
+            # generated_tests_dict = self.test_gen.generate_tests(max_tokens=40960)
+            generated_tests_dict = self.test_gen.generate_tests_htzr_cn(max_tokens=4096)
+            for generated_test in generated_tests_dict.get("new_tests", []):
+                
+                test_result = self.test_gen.validate_test_immediately(
+                    generated_test, self.args.run_tests_multiple_times
+                )
+                # test_results_list.append(test_result)
+                
+                
+                if len(test_results_list) == 0:
+                    test_results_list.append(generated_test)
+                else:
+                    for list_test in test_results_list:
+                        if list_test['测试用例编号'] == generated_test['测试用例编号']:
+                            # print("===== list_test output =====",list_test)
+                            break
+                    else:
+                        test_results_list.append(generated_test)
+            
+            iteration_count += 1
+            # if self.test_gen.current_coverage < (self.test_gen.desired_coverage / 100):
+            #     self.test_gen.run_coverage()
+        if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100):
+            self.logger.info(
+                f"Reached above target coverage of {self.test_gen.desired_coverage}% (Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%) in {iteration_count} iterations."
+            )
+        elif iteration_count == self.args.max_iterations:
+            failure_message = f"Reached maximum iteration limit without achieving desired coverage. Current Coverage: {round(self.test_gen.current_coverage * 100, 2)}%"
+            if self.args.strict_coverage:
+                # User requested strict coverage (similar to "--cov-fail-under in pytest-cov"). Fail with exist code 2.
+                self.logger.error(failure_message)
+                sys.exit(2)
+            else:
+                self.logger.info(failure_message)
+
+        self.logger.info(
+            f"Total number of input tokens used for LLM model {self.test_gen.llm_caller.model}: {self.test_gen.total_input_token_count}"
+        )
+        self.logger.info(
+            f"Total number of output tokens used for LLM model {self.test_gen.llm_caller.model}: {self.test_gen.total_output_token_count}"
+        )
+        # print("===== test_results_list output =====",test_results_list)
+        ReportGenerator_htzr_cn.generate_report(test_results_list, self.args.report_filepath)
+
+

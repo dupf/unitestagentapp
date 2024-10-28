@@ -97,9 +97,9 @@ watch(
           <List />
         </div>
         <div class="p-4">
-          <NButton block @click="showPromptStore">
+          <!-- <NButton block @click="showPromptStore">
             {{ $t('sider.promptStore') }}
-          </NButton>
+          </NButton> -->
         </div>
       </main>
       <Footer />

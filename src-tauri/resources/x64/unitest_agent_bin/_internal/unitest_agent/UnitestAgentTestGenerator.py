@@ -7,6 +7,8 @@ import sys
 # sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from unitest_agent.FilePreprocessor import FilePreprocessor
 from unitest_agent.llmCaller import LLMCaller
+
+from unitest_agent.llmRequest import LLMRequest
 from unitest_agent.CustomLogger import CustomLogger
 from unitest_agent.settings.config_loader import get_settings
 from unitest_agent.PromptBuilder import PromptBuilder
@@ -19,15 +21,16 @@ class UnitestAgentTestGenerator:
         test_file_path: str,
         code_coverage_report_path: str,
         test_command: str,
-        llm_model: str,
-        api_base: str = "",
         test_command_dir: str = os.getcwd(),
         included_files: list = None,
         coverage_type="cobertura",
         desired_coverage: int = 90,  # Default to 90% coverage if not specified
+        llm_model: str="",
+        api_base: str = "",
         additional_instructions: str = "",
         use_report_coverage_feature_flag: bool = False,
-    ):
+        isremote: bool = True,
+       ):
         
         self.source_file_path = source_file_path
         self.test_file_path = test_file_path
@@ -41,13 +44,23 @@ class UnitestAgentTestGenerator:
         self.language = self.get_code_language(source_file_path)
         self.use_report_coverage_feature_flag = use_report_coverage_feature_flag
         self.last_coverage_percentages = {}
-
+        self.isremote = isremote
+        if self.isremote:
+            self.llm_caller = LLMCaller(model=llm_model, api_base=api_base)
+        else:
+            self.llm_caller = LLMRequest(model=llm_model, api_base=api_base)
+            self.model_list = self.llm_caller.get_model_list()
+        
+        # print("self.model_list", self.model_list)
         # Objects to instantiate
-        self.llm_caller = LLMCaller(model=llm_model, api_base=api_base)
+        # LLMRequest(model=llm_model, api_base=api_base) LLMCaller(model=llm_model, api_base=api_base)
+        # self.llm_caller = LLMCaller(model=llm_model, api_base=api_base)
+        # LLMRequest(model=llm_model, api_base=api_base)
+        #LLMRequest(model=self.model_list, api_base=api_base)
+        # LLMCaller(model=llm_model, api_base=api_base)
 
         # Get the logger instance from CustomLogger
         self.logger = CustomLogger.get_logger(__name__)
-
 
         # States to maintain within this class
         self.preprocessor = FilePreprocessor(self.test_file_path)
@@ -237,10 +250,6 @@ class UnitestAgentTestGenerator:
                 self.code_coverage_report = f.read()
 
 
-
-
-
-
     @staticmethod
     def get_included_files(included_files):
         """
@@ -343,9 +352,13 @@ class UnitestAgentTestGenerator:
                 prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_headers_indentation"
                 )
-                
-                response, prompt_token_count, response_token_count = (
-                        self.llm_caller.call_model(prompt=prompt_headers_indentation)
+                if self.isremote:
+                    response, prompt_token_count, response_token_count = (
+                         self.llm_caller.call_model(  prompt=prompt_headers_indentation)
+                    )
+                else:
+                    response, prompt_token_count, response_token_count = (
+                         self.llm_caller.call_model(self.model_list,  prompt=prompt_headers_indentation)
                     )
             
                 self.total_input_token_count += prompt_token_count
@@ -370,9 +383,18 @@ class UnitestAgentTestGenerator:
                 prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
                     file="analyze_suite_test_insert_line"
                 )
-                response, prompt_token_count, response_token_count = (
-                    self.llm_caller.call_model(prompt=prompt_test_insert_line)
-                )
+                # response, prompt_token_count, response_token_count = (
+                #     if self.isremote:
+                #          self.llm_caller.call_model(  prompt=prompt_headers_indentation)
+                #     else:
+                #          self.llm_caller.call_model(self.model_list,  prompt=prompt_headers_indentation)
+
+                # )
+                if self.isremote:
+                    response, prompt_token_count, response_token_count = self.llm_caller.call_model( prompt=prompt_test_insert_line)
+                else:
+                    response, prompt_token_count, response_token_count = self.llm_caller.call_model(self.model_list, prompt=prompt_test_insert_line)
+
                 self.total_input_token_count += prompt_token_count
                 self.total_output_token_count += response_token_count
                 tests_dict = load_yaml(response)
@@ -402,65 +424,70 @@ class UnitestAgentTestGenerator:
             self.logger.error(f"Error during initial test suite analysis: {e}")
             raise Exception("Error during initial test suite analysis")
 
-    def generate_tests(self, max_tokens=4096, dry_run=False):
-        """
-        Generate tests using the AI model based on the constructed prompt.
+    # def generate_tests(self, max_tokens=4096, dry_run=False):
+    #     """
+    #     Generate tests using the AI model based on the constructed prompt.
 
-        This method generates tests by calling the AI model with the constructed prompt.
-        It handles both dry run and actual test generation scenarios. In a dry run, it returns canned test responses.
-        In the actual run, it calls the AI model with the prompt and processes the response to extract test
-        information such as test tags, test code, test name, and test behavior.
+    #     This method generates tests by calling the AI model with the constructed prompt.
+    #     It handles both dry run and actual test generation scenarios. In a dry run, it returns canned test responses.
+    #     In the actual run, it calls the AI model with the prompt and processes the response to extract test
+    #     information such as test tags, test code, test name, and test behavior.
 
-        Parameters:
-            max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
-            dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
+    #     Parameters:
+    #         max_tokens (int, optional): The maximum number of tokens to use for generating tests. Defaults to 4096.
+    #         dry_run (bool, optional): A flag indicating whether to perform a dry run without calling the AI model. Defaults to False.
 
-        Returns:
-            dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
+    #     Returns:
+    #         dict: A dictionary containing the generated tests with test tags, test code, test name, and test behavior. If an error occurs during test generation, an empty dictionary is returned.
 
-        Raises:
-            Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
-        """
-        self.prompt = self.build_prompt()
+    #     Raises:
+    #         Exception: If there is an error during test generation, such as a parsing error while processing the AI model response.
+    #     """
+    #     self.prompt = self.build_prompt()
 
-        if dry_run:
-            response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
-        else:
-            response, prompt_token_count, response_token_count = (
-                self.llm_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-            )
-            print("output:{}", response)
+    #     if dry_run:
+    #         response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
+    #     else:
+    #         response, prompt_token_count, response_token_count = (
+    #             #   self.llm_caller.call_model(self.model_list, prompt=self.prompt, max_tokens=max_tokens)
+    #             # self.llm_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+    #                 if self.isremote:
+    #                      self.llm_caller.call_model( prompt=self.prompt, max_tokens=max_tokens)
+    #                 else:
+    #                      self.llm_caller.call_model(self.model_list, prompt=self.prompt, max_tokens=max_tokens)
+                
+    #         )
+    #         print("output:{}", response)
 
-            self.total_input_token_count += prompt_token_count
-            self.total_output_token_count += response_token_count
-        try:
-            tests_dict = load_yaml(
-                response,
-                keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"],
-            )
-            if tests_dict is None:
-                return {}
-        except Exception as e:
-            self.logger.error(f"Error during test generation: {e}")
-            # Record the error as a failed test attempt
-            fail_details = {
-                "status": "FAIL",
-                "reason": f"Parsing error: {e}",
-                "exit_code": None,  # No exit code as it's a parsing issue
-                "stderr": str(e),
-                "stdout": "",  # No output expected from a parsing error
-                "test": response,  # Use the response that led to the error
-            }
-            # self.failed_test_runs.append(fail_details)
-            tests_dict = []
+    #         self.total_input_token_count += prompt_token_count
+    #         self.total_output_token_count += response_token_count
+    #     try:
+    #         tests_dict = load_yaml(
+    #             response,
+    #             keys_fix_yaml=["test_tags", "test_code", "test_name", "test_behavior"],
+    #         )
+    #         if tests_dict is None:
+    #             return {}
+    #     except Exception as e:
+    #         self.logger.error(f"Error during test generation: {e}")
+    #         # Record the error as a failed test attempt
+    #         fail_details = {
+    #             "status": "FAIL",
+    #             "reason": f"Parsing error: {e}",
+    #             "exit_code": None,  # No exit code as it's a parsing issue
+    #             "stderr": str(e),
+    #             "stdout": "",  # No output expected from a parsing error
+    #             "test": response,  # Use the response that led to the error
+    #         }
+    #         # self.failed_test_runs.append(fail_details)
+    #         tests_dict = []
 
-        return tests_dict
+    #     return tests_dict
 
 
-    def generate_tests_htzr_cn(self, max_tokens=40960, dry_run=False):
+    def generate_tests_htzr_cn(self, max_tokens=4096, dry_run=False):
         """
         根据构造的提示使用 AI 模型生成测试。
-
         此方法通过使用构造的提示调用 AI 模型来生成测试。
         它可处理试运行和实际测试生成场景。在试运行中，它返回预制的测试响应。
         在实际运行中，它使用提示调用 AI 模型并处理响应以提取测试信息，例如测试标签、测试代码、测试名称和测试行为。
@@ -479,13 +506,28 @@ class UnitestAgentTestGenerator:
         if dry_run:
             response = "```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```"
         else:
-            response, prompt_token_count, response_token_count = (
-                self.llm_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
-            )
-            # print("output:{}", response)
+            # response, prompt_token_count, response_token_count = (
+            #     #   self.llm_caller.call_model(self.model_list, prompt=self.prompt, max_tokens=max_tokens)
+            #     # self.llm_caller.call_model(prompt=self.prompt, max_tokens=max_tokens)
+            #     if self.isremote:
+            #         self.llm_caller.call_model( prompt=self.prompt, max_tokens=max_tokens)
+            #     else:
+            #         self.llm_caller.call_model(self.model_list, prompt=self.prompt, max_tokens=max_tokens)
+            # )
+            if self.isremote:
+                # print("output:{}", response)
+                response, prompt_token_count, response_token_count = self.llm_caller.call_model( prompt=self.prompt, max_tokens=max_tokens)
+            else:
+                # print("output:{}", response)
+                response, prompt_token_count, response_token_count = self.llm_caller.call_model(self.model_list, prompt=self.prompt, max_tokens=max_tokens)
 
+            # print("output:{}", response)
             self.total_input_token_count += prompt_token_count
             self.total_output_token_count += response_token_count
+            if "```yaml" not in response:
+                # return {}
+                response = response.replace("language", "```yaml\nlanguage")
+
         try:
             tests_dict = load_yaml(
                 response,
@@ -723,7 +765,6 @@ class UnitestAgentTestGenerator:
                                 "error_message": "did not increase code coverage",
                             }
                         )  # Append failure details to the list
-
                         # if "WANDB_API_KEY" in os.environ:
                         #     root_span = Trace(
                         #         name="fail_details_"
@@ -733,7 +774,6 @@ class UnitestAgentTestGenerator:
                         #         outputs=fail_details,
                         #     )
                         #     root_span.log(name="inference")
-
                         return fail_details
                 except Exception as e:
                     # Handle errors gracefully

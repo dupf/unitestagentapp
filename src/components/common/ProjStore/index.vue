@@ -26,6 +26,7 @@ const unitestModel = ref({
   maxIterations: UnitestConfig.value.maxIterations,
   additionalInstructions: UnitestConfig.value.additionalInstructions,
   model: UnitestConfig.value.model,
+  isRemote: UnitestConfig.value.isRemote ? 'true' : 'false',
 })
 
 const rules: FormRules = {
@@ -102,7 +103,7 @@ function saveUnitestInfo() {
       UnitestStore.UnitestConfig.maxIterations = unitestModel.value.maxIterations
       UnitestStore.UnitestConfig.additionalInstructions = unitestModel.value.additionalInstructions
       UnitestStore.UnitestConfig.model = unitestModel.value.model
-
+      UnitestStore.UnitestConfig.isRemote = unitestModel.value.isRemote === 'true'
       UnitestStore.recordState()
 
       ms.success(t('common.success'))
@@ -141,7 +142,10 @@ function saveUnitestInfo() {
         <NInput v-model:value="unitestModel.testfileOutputPath" :placeholder="$t('unitestModel.testfileOutputPath')" />
       </NFormItem>
       <NFormItem path="codecoveragereportPath" :label="$t('unitestModel.codecoveragereportPath')">
-        <NInput v-model:value="unitestModel.codecoveragereportPath" :placeholder="$t('unitestModel.codecoveragereportPath')" />
+        <NInput
+          v-model:value="unitestModel.codecoveragereportPath"
+          :placeholder="$t('unitestModel.codecoveragereportPath')"
+        />
       </NFormItem>
       <NFormItem path="testCommand" :label="$t('unitestModel.testCommand')">
         <NInput v-model:value="unitestModel.testCommand" :placeholder="$t('unitestModel.testCommand')" />
@@ -153,7 +157,7 @@ function saveUnitestInfo() {
         <NInput v-model:value="unitestModel.includedFiles" :placeholder="$t('unitestModel.includedFiles')" />
       </NFormItem>
       <NFormItem path="coverageType" :label="$t('unitestModel.coverageType')">
-        <NSelect v-model:value="unitestModel.coverageType" :placeholder="$t('unitestModel.coverageType')" />
+        <NInput v-model:value="unitestModel.coverageType" :placeholder="$t('unitestModel.coverageType')" />
       </NFormItem>
       <NFormItem path="reportFilepath" :label="$t('unitestModel.reportFilepath')">
         <NInput v-model:value="unitestModel.reportFilepath" :placeholder="$t('unitestModel.reportFilepath')" />
@@ -165,11 +169,31 @@ function saveUnitestInfo() {
         <NInput v-model:value="unitestModel.maxIterations" :placeholder="$t('unitestModel.maxIterations')" />
       </NFormItem> -->
       <NFormItem path="additionalInstructions" :label="$t('unitestModel.additionalInstructions')">
-        <NInput v-model:value="unitestModel.additionalInstructions" :placeholder="$t('unitestModel.additionalInstructions')" />
+        <NInput
+          v-model:value="unitestModel.additionalInstructions"
+          :placeholder="$t('unitestModel.additionalInstructions')"
+        />
       </NFormItem>
       <NFormItem path="model" :label="$t('unitestModel.model')">
         <NInput v-model:value="unitestModel.model" :placeholder="$t('unitestModel.model')" />
       </NFormItem>
+      <!-- <NFormItem path="model" :label="$t('unitestModel.model')">
+        <NInput v-model:value="unitestModel.isRemote" :placeholder="$t('unitestModel.isRemote')" />
+      </NFormItem> -->
+
+      <NFormItem path="isRemote" :label="$t('unitestModel.isRemote')">
+        <NSelect
+          v-model:value="unitestModel.isRemote" :options="[
+            { label: 'Yes', value: 'true' },
+            { label: 'No', value: 'false' },
+          ]"
+        />
+      </NFormItem>
+      <!-- <NFormItem path="isRemote" :label="$t('unitestModel.isRemote')">
+        <NCheckbox v-model:checked="unitestModel.model">
+          {{ unitestModel.isRemote ? 'yes' : 'no' }}
+        </NCheckbox>
+      </NFormItem> -->
 
       <div class="flex items-center justify-end">
         <NButton size="small" @click="saveUnitestInfo">

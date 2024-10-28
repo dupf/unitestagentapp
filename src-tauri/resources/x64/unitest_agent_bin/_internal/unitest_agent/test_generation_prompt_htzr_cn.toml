@@ -114,19 +114,18 @@ new_tests:
   全局变量: |
     ""
   初始化代码:|
-   ""
+    ""
   桩函数:|
-  ""
+    ""
   输入:|
-  ""
+    ""
   预期输出:|
   return false;
   实际输出:|
   return false;
   结论:|
   PASS
-  test_tags: happy path
-    ...
+  ...
 ```
 
 Use block scalar('|') to format each YAML output.

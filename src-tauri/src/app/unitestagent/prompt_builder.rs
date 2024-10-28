@@ -125,7 +125,6 @@ impl PromptBuilder {
         context.insert("additional_instructions_text", &self.additional_instructions);
         context.insert("language", &self.language);
         context.insert("max_tests", &MAX_TESTS_PER_RUN);
-
         let mut tera = Tera::default();
         // Get the system template from the configuration
         let settings = get_settings();
@@ -139,13 +138,11 @@ impl PromptBuilder {
         //     .and_then(|v| v.as_str())
         //     .unwrap_or_default()    
         //     .to_string();
-
         tera.add_raw_template("system", &system_template)?;
         tera.add_raw_template("user", &user_template)?;
-        
         let system_prompt = tera.render("system", &context)?;
         let user_prompt = tera.render("user", &context)?;
-
+ 
         Ok((system_prompt, user_prompt))
     }
 
@@ -153,16 +150,13 @@ impl PromptBuilder {
         let mut context = Context::new();
         // ... (same as build_prompt)
         let mut tera = Tera::default();
-    
         // Assume these templates are loaded from somewhere
         // let system_template =Settings::get_settings().get(file).system;
         // let user_template = Settings::get_settings().get(file).user;
         // let settings = Settings::get_settings();
         let settings = get_settings();
-        
         let system_template = settings.test_generation_prompt_htzr_cn.system;
         let user_template = settings.test_generation_prompt_htzr_cn.user;
-
         tera.add_raw_template("system", &system_template)?;
         tera.add_raw_template("user", &user_template)?;
 

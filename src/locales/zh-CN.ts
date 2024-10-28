@@ -128,6 +128,7 @@ export default {
     maxIterations: '最大迭代次数',
     additionalInstructions: '额外指令',
     model: '模型',
+    isRemote: '是否远程',
     saveUnitestInfo: '保存单元测试信息',
   },
 
