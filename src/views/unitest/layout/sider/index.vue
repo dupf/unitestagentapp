@@ -35,13 +35,13 @@ function handleAdd_proj(event: Event) {
 function handleUpdateCollapsed() {
   appStore.setSiderCollapsed(!collapsed.value)
 }
-function showPromptStore() {
-  tauri.invoke('new_window', {
-    label: 'prompt_store',
-    title: 'Ptompt Store',
-    url: '/#/window/prompt-store',
-  })
-}
+// function showPromptStore() {
+//   tauri.invoke('new_window', {
+//     label: 'prompt_store',
+//     title: 'Ptompt Store',
+//     url: '/#/window/prompt-store',
+//   })
+// }
 
 const getMobileClass = computed<CSSProperties>(() => {
   if (isMobile.value) {

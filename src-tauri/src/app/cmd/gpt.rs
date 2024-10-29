@@ -214,31 +214,8 @@ pub async fn fetch_unitest_api(
     let os: &str = std::env::consts::OS;
     println!("Current operating system: {}", os);
     let unitest_agent_path: PathBuf;
-
-    match os {
-        "windows" => {
-            unitest_agent_path = resource_dir_path
-                .unwrap()
-                .join("resources/x64_win/unitest_agent_bin/unitest_agent_bin");
-        },  
-        "macos" => {
-        unitest_agent_path = resource_dir_path
-                .unwrap()
-                .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
-        },
-        _ => {
-            panic!("Unsupported operating system: {}", os);
-     }
-     }
-
-    
-    log::info!("unitest_agent_path: {:?}", unitest_agent_path);
-
-
     let finish_reason: String = "finish".to_string();
     // println!("parsed_contents: ===");
-
-    let mut child: Command = Command::new(unitest_agent_path);
     let args = [
             ("--source-file-path", &parsed_contents[0]),
             ("--test-file-path", &parsed_contents[1]),
@@ -255,6 +232,29 @@ pub async fn fetch_unitest_api(
             ("--model", &parsed_contents[12]),
             ("--isremote", &parsed_contents[13]),
         ];
+        unitest_agent_path = PathBuf::from(&parsed_contents[5]).
+        join(&parsed_contents[4]);
+        log::info!("unitest_agent_path: {:?}", unitest_agent_path);
+        // match os {
+        //     "windows" => {
+        //         unitest_agent_path = PathBuf::from(&parsed_contents[5]);
+        //         // resource_dir_path
+        //         // resource_dir_path
+        //         //     .unwrap()
+        //         //     .join("resources/x64_win/unitest_agent_bin/unitest_agent_bin");
+        //     },  
+        //     "macos" => {
+        //     unitest_agent_path = resource_dir_path
+        //             .unwrap()
+        //             .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
+        //     },
+        //     _ => {
+        //         panic!("Unsupported operating system: {}", os);
+        //  }
+        //  }
+
+        let mut child: Command = Command::new(unitest_agent_path);
+        log::info!("==========Command: child:==========");
         for (arg, value) in args.iter() {
             if !value.is_empty() {
                 child.arg(arg);
@@ -266,11 +266,10 @@ pub async fn fetch_unitest_api(
         .spawn()?;
         // .stdout(Stdio::piped())
         // .spawn()?;
-
     println!("parsed_contents: {:?}", child);
     let stdout = child.stdout.take().expect("Failed to capture stdout");
     let reader = BufReader::new(stdout);
-    let mut lines = reader.lines();
+    let mut lines: std::io::Lines<BufReader<std::process::ChildStdout>> = reader.lines();
     let mut content: String = String::new();
     while let Some(line) = lines.next().transpose()? {
         println!("{}", line);

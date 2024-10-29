@@ -59,18 +59,16 @@
             </tr>
             
             <tr>
-                <td>test_get_CurrentTemp_cold_slope
+                <td>test_get_CurrentTemp_above_25_1.0
 </td>
                 <td>等价类、边界值
 </td>
-                <td>测试函数 `get_CurrentTemp` 在 `V_temp_A` 大于等于 `V_TEMP25_A` 时的行为
+                <td>测试函数在V_temp_A大于V_TEMP25_A时的行为
 </td>
-                <td>TEST(testJZ20_TZB_AllData, test_get_CurrentTemp_cold_slope) {
-  // 模拟 ADC16_GetChannelConversionValue 返回值
-  uint32_t V_temp_D = (uint32_t)((V_TEMP25_A + 0.001) / V_STEP_A);
-  float expected_temp = 25.0 - ((V_TEMP25_A + 0.001 - V_TEMP25_A) / M_COLD_SLOPE);
-  float actual_temp = get_CurrentTemp();
-  ASSERT_FLOAT_EQ(expected_temp, actual_temp);
+                <td>void test_get_CurrentTemp_above_25(void) {
+    float expected_temp = 20.0;
+    float actual_temp = get_CurrentTemp();
+    assert(actual_temp == expected_temp);
 }
 </td>
                 <td>""
@@ -79,9 +77,103 @@
 </td>
                 <td>""
 </td>
-                <td>V_temp_D = (uint32_t)((V_TEMP25_A + 0.001) / V_STEP_A)
+                <td>V_temp_A = 0.7020; // 大于V_TEMP25_A
 </td>
-                <td>expected_temp = 25.0 - ((V_TEMP25_A + 0.001 - V_TEMP25_A) / M_COLD_SLOPE)
+                <td>20.0
+</td>
+                <td>20.0
+</td>
+                <td>PASS
+</td>
+            </tr>
+            
+            <tr>
+                <td>test_get_CurrentTemp_below_25_1.0
+</td>
+                <td>等价类、边界值
+</td>
+                <td>测试函数在V_temp_A小于V_TEMP25_A时的行为
+</td>
+                <td>void test_get_CurrentTemp_below_25(void) {
+    float expected_temp = 30.0;
+    float actual_temp = get_CurrentTemp();
+    assert(actual_temp == expected_temp);
+}
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>V_temp_A = 0.7000; // 小于V_TEMP25_A
+</td>
+                <td>30.0
+</td>
+                <td>30.0
+</td>
+                <td>PASS
+</td>
+            </tr>
+            
+            <tr>
+                <td>test_get_CurrentTemp_equal_25_1.0
+</td>
+                <td>等价类、边界值
+</td>
+                <td>测试函数在V_temp_A等于V_TEMP25_A时的行为
+</td>
+                <td>void test_get_CurrentTemp_equal_25(void) {
+    float expected_temp = 25.0;
+    float actual_temp = get_CurrentTemp();
+    assert(actual_temp == expected_temp);
+}
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>V_temp_A = 0.7012; // 等于V_TEMP25_A
+</td>
+                <td>25.0
+</td>
+                <td>25.0
+</td>
+                <td>PASS
+</td>
+            </tr>
+            
+            <tr>
+                <td>test_get_CurrentTemp_above_25
+</td>
+                <td>等价类划分
+</td>
+                <td>测试当温度传感器输出电压高于25°C时的温度计算
+</td>
+                <td>void test_get_CurrentTemp_above_25(void) {
+    // 模拟ADC读取的电压值高于25°C时的电压
+    uint32_t V_temp_D = 1000U; // 假设的ADC读取值
+    float V_temp_A = (float)V_temp_D * V_STEP_A;
+    float expected_temp = 25.0 - ((V_temp_A - V_TEMP25_A) / M_COLD_SLOPE);
+
+    // 调用被测函数
+    float actual_temp = get_CurrentTemp();
+
+    // 验证结果
+    assert(actual_temp == expected_temp);
+}
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>V_temp_D = 1000U
+</td>
+                <td>expected_temp = 25.0 - ((V_temp_A - V_TEMP25_A) / M_COLD_SLOPE)
 </td>
                 <td>actual_temp = get_CurrentTemp()
 </td>
@@ -90,18 +182,23 @@
             </tr>
             
             <tr>
-                <td>test_get_CurrentTemp_hot_slope
+                <td>test_get_CurrentTemp_below_25
 </td>
-                <td>等价类、边界值
+                <td>等价类划分
 </td>
-                <td>测试函数 `get_CurrentTemp` 在 `V_temp_A` 小于 `V_TEMP25_A` 时的行为
+                <td>测试当温度传感器输出电压低于25°C时的温度计算
 </td>
-                <td>TEST(testJZ20_TZB_AllData, test_get_CurrentTemp_hot_slope) {
-  // 模拟 ADC16_GetChannelConversionValue 返回值
-  uint32_t V_temp_D = (uint32_t)((V_TEMP25_A - 0.001) / V_STEP_A);
-  float expected_temp = 25.0 - ((V_TEMP25_A - 0.001 - V_TEMP25_A) / M_HOT_SLOPE);
-  float actual_temp = get_CurrentTemp();
-  ASSERT_FLOAT_EQ(expected_temp, actual_temp);
+                <td>void test_get_CurrentTemp_below_25(void) {
+    // 模拟ADC读取的电压值低于25°C时的电压
+    uint32_t V_temp_D = 500U; // 假设的ADC读取值
+    float V_temp_A = (float)V_temp_D * V_STEP_A;
+    float expected_temp = 25.0 - ((V_temp_A - V_TEMP25_A) / M_HOT_SLOPE);
+
+    // 调用被测函数
+    float actual_temp = get_CurrentTemp();
+
+    // 验证结果
+    assert(actual_temp == expected_temp);
 }
 </td>
                 <td>""
@@ -110,40 +207,9 @@
 </td>
                 <td>""
 </td>
-                <td>V_temp_D = (uint32_t)((V_TEMP25_A - 0.001) / V_STEP_A)
+                <td>V_temp_D = 500U
 </td>
-                <td>expected_temp = 25.0 - ((V_TEMP25_A - 0.001 - V_TEMP25_A) / M_HOT_SLOPE)
-</td>
-                <td>actual_temp = get_CurrentTemp()
-</td>
-                <td>PASS
-</td>
-            </tr>
-            
-            <tr>
-                <td>test_get_CurrentTemp_exact_25_degrees
-</td>
-                <td>等价类、边界值
-</td>
-                <td>测试函数 `get_CurrentTemp` 在 `V_temp_A` 等于 `V_TEMP25_A` 时的行为
-</td>
-                <td>TEST(testJZ20_TZB_AllData, test_get_CurrentTemp_exact_25_degrees) {
-  // 模拟 ADC16_GetChannelConversionValue 返回值
-  uint32_t V_temp_D = (uint32_t)(V_TEMP25_A / V_STEP_A);
-  float expected_temp = 25.0;
-  float actual_temp = get_CurrentTemp();
-  ASSERT_FLOAT_EQ(expected_temp, actual_temp);
-}
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>V_temp_D = (uint32_t)(V_TEMP25_A / V_STEP_A)
-</td>
-                <td>expected_temp = 25.0
+                <td>expected_temp = 25.0 - ((V_temp_A - V_TEMP25_A) / M_HOT_SLOPE)
 </td>
                 <td>actual_temp = get_CurrentTemp()
 </td>

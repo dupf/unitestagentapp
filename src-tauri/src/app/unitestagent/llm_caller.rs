@@ -42,7 +42,11 @@ impl LLMCaller {
         }
 
         let client = Client::new();
+        // let mut url = "https://api.openai.com/v1/chat/completions".to_string();
+        
         let mut url = "https://api.openai.com/v1/chat/completions".to_string();
+
+        
         if !self.api_base.is_empty() {
             url = self.api_base.clone();
         }

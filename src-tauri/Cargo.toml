@@ -41,6 +41,7 @@ docx-rs = "0.4.17"
 scraper = "0.12.0"
 html5ever = "0.25"
 markup5ever = "0.10"
+select = "0.6" # 用于解析 HTML
 
 
 [features]
