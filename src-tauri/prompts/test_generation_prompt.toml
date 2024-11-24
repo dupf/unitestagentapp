@@ -77,10 +77,10 @@ class SingleTest(BaseModel):
     测试用例编号: str = Field(description=" A short unique test name, that should reflect the test objective")
 {%- endif %}
     测试代码：str = Field(description="A single test function, that tests the behavior described in 'test_behavior'. The test should be a written like its a part of the existing test suite, if there is one, and it can use existing helper functions, setup, or teardown code.")
-     桩函数: str = Field(description="New imports that are required to run the new test function, and are not already imported in the test file. Give an empty string if no new imports are required. If relevant, add new imports as  'import ...' lines.")
+    桩函数: str = Field(description="New imports that are required to run the new test function, and are not already imported in the test file. Give an empty string if no new imports are required. If relevant, add new imports as  'import ...' lines.")
     输入：str = Field(description="输入")
     预期输出：str = Field(description="预期输出")
-     结论：str = Field(description="结论")    Short description of the behavior the test covers
+    结论：str = Field(description="结论")    Short description of the behavior the test covers
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
@@ -95,10 +95,10 @@ existing_test_function_signature: |
   ...
 new_tests:
 - 测试用例编号: |
-  test_single_element_list_1.0
- 测试技术: |
-  等价类、边界值
- 用例描述: |
+    test_single_element_list_1.0
+  测试技术: |
+    等价类、边界值
+  用例描述: |
     测试函数是否对单个元素列表返回正确的输出
     进入分支
     if(can_addr_info==NULL)
@@ -106,27 +106,26 @@ new_tests:
     (can_addr_info->sit_num > 25U) || (can_addr_info->sit_num_ex > 25U)) （FFTF）//配置区段数超最大值
 
   测试代码: |
-{%- if language in ["python"] %}
-    def ...
-{%- else %}
-    ...
-{%- endif %}
+    {%- if language in ["python"] %}
+        def ...
+    {%- else %}
+        ...
+    {%- endif %}
   全局变量: |
     ""
   初始化代码:|
-   ""
+    ""
   桩函数:|
-  ""
+    ""
   输入:|
-  ""
+    ""
   预期输出:|
-  return false;
+    return false;
   实际输出:|
-  return false;
+    return false;
   结论:|
-  PASS
-  test_tags: happy path
-    ...
+    PASS
+  ...
 ```
 
 Use block scalar('|') to format each YAML output.

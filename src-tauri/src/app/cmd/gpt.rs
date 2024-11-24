@@ -235,24 +235,7 @@ pub async fn fetch_unitest_api(
         unitest_agent_path = PathBuf::from(&parsed_contents[5]).
         join(&parsed_contents[4]);
         log::info!("unitest_agent_path: {:?}", unitest_agent_path);
-        // match os {
-        //     "windows" => {
-        //         unitest_agent_path = PathBuf::from(&parsed_contents[5]);
-        //         // resource_dir_path
-        //         // resource_dir_path
-        //         //     .unwrap()
-        //         //     .join("resources/x64_win/unitest_agent_bin/unitest_agent_bin");
-        //     },  
-        //     "macos" => {
-        //     unitest_agent_path = resource_dir_path
-        //             .unwrap()
-        //             .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
-        //     },
-        //     _ => {
-        //         panic!("Unsupported operating system: {}", os);
-        //  }
-        //  }
-
+   
         let mut child: Command = Command::new(unitest_agent_path);
         log::info!("==========Command: child:==========");
         for (arg, value) in args.iter() {

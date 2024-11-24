@@ -4,7 +4,6 @@ use tauri::{AppHandle};
 use html5ever::parse_document;
 use html5ever::tendril::TendrilSink;
 // use markup5ever::rcdom::RcDom;
-// use docx_rs::{Docx, Paragraph, Run};
 use html2text::from_read;
 use log::{error, info};
 // use std::fs::File;
@@ -21,17 +20,12 @@ use select::predicate::{Name, Class};
 #[tauri::command]
 pub async fn convert_html_to_word(apphandle: tauri::AppHandle, srcpath: String, destpath: String) -> Result<(), String> {
     // 检查源文件是否存在
-//     let package_info = tauri::api::package_info(&apphandle);
-//  let env_info = tauri::api::env(&apphandle);
-//     let resource_dir_path = resource_dir(&package_info, &env_info);
-//     let srcpath2 = resource_dir_path.unwrap().join(srcpath);
+
     let srcpath2 = apphandle
         .path_resolver()
         .resolve_resource(srcpath)
         .expect("failed to resolve resource");
-  // } else {
-  //   println!("Resource directory not found");
-  // }
+
     info!("srcpath2: {}", srcpath2.to_str().unwrap());
     let mut file = File::open(srcpath2).expect("Failed to open HTML file");
     let mut html_content: String = String::new();

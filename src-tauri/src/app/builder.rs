@@ -8,7 +8,7 @@ pub fn setup(app: &mut App) -> std::result::Result<(), Box<dyn std::error::Error
     tauri::async_runtime::spawn(async move {
       log::info!("main_window:");
       let mut main_win = WindowBuilder::new(&app, "core", WindowUrl::App("index.html".into()))
-        .title("UnitestAgent")
+        .title("UnitestAgent, The World's First Agent Based Unit Testing Tool")
         .resizable(true)
         .fullscreen(false)
         .inner_size(1000.0, 800.0);

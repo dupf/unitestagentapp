@@ -6,7 +6,7 @@
 mod app;
 mod utils;
 
-use app::{builder, cmd};
+use app::{builder, cmd, uagent};
 use tauri::Manager;
 use tauri_plugin_log::{
   fern::colors::{Color, ColoredLevelConfig},
@@ -14,8 +14,6 @@ use tauri_plugin_log::{
 };
 
 fn main() {
-
-
   let mut log = tauri_plugin_log::Builder::default()
   .targets([
     LogTarget::Folder(utils::app_root()),
@@ -34,7 +32,6 @@ fn main() {
     });
   }
 
-
   let mut builder = tauri::Builder::default()
   .plugin(log.build())
   .invoke_handler(tauri::generate_handler![
@@ -44,10 +41,12 @@ fn main() {
     cmd::download::download_img,
     cmd::download::convert_html_to_word,
     cmd::window::download_report,
-    cmd::window::new_window
+    cmd::window::new_window,
+    uagent::unitest::fetch_unitest
   ])
   .setup(builder::setup);
 
+  
   #[cfg(target_os = "macos")]
   {
     builder = builder.on_window_event(|event| match event.event() {
