@@ -9,8 +9,6 @@ pub struct TestGenerationPrompt {
 
 #[derive(Deserialize, Debug)]
 pub struct PromptConfig {   
-
-    
     // 使用 HashMap 来存储所有的 prompts
     #[serde(flatten)]
     pub prompts: HashMap<String, TestGenerationPrompt>,

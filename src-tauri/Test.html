@@ -58,47 +58,16 @@
             </tr>
             
             <tr>
-                <td>test_binary_search_element_found_1.0
-</td>
-                <td>等价类边界值
-</td>
-                <td>测试二分查找函数在数组中找到目标元素的情况
-</td>
-                <td>void test_binary_search_element_found() {
-    int arr[] = {2, 3, 4, 10, 40};
-    int n = sizeof(arr) / sizeof(arr[0]);
-    int x = 10;
-    int result = binarySearch(arr, 0, n - 1, x);
-    assert(result == 3);
-}
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>""
-</td>
-                <td>arr = {2, 3, 4, 10, 40}, x = 10
-</td>
-                <td>result = 3
-</td>
-                <td>result = 3
-</td>
-                <td>PASS
-</td>
-            </tr>
-            
-            <tr>
                 <td>test_binary_search_element_not_found_1.0
 </td>
-                <td>等价类边界值
+                <td>边界值分析
 </td>
-                <td>测试二分查找函数在数组中未找到目标元素的情况
+                <td>测试二分查找函数在数组中找不到目标元素时是否返回-1
 </td>
                 <td>void test_binary_search_element_not_found() {
     int arr[] = {2, 3, 4, 10, 40};
     int n = sizeof(arr) / sizeof(arr[0]);
-    int x = 5;
+    int x = 5; // 要查找的元素不在数组中
     int result = binarySearch(arr, 0, n - 1, x);
     assert(result == -1);
 }
@@ -120,18 +89,18 @@
             </tr>
             
             <tr>
-                <td>test_binary_search_empty_array_1.0
+                <td>test_binary_search_element_at_start_1.0
 </td>
-                <td>等价类边界值
+                <td>边界值分析
 </td>
-                <td>测试二分查找函数在空数组中查找的情况
+                <td>测试二分查找函数在数组开头找到目标元素时是否返回正确的索引
 </td>
-                <td>void test_binary_search_empty_array() {
-    int arr[] = {};
+                <td>void test_binary_search_element_at_start() {
+    int arr[] = {2, 3, 4, 10, 40};
     int n = sizeof(arr) / sizeof(arr[0]);
-    int x = 10;
+    int x = 2; // 要查找的元素在数组开头
     int result = binarySearch(arr, 0, n - 1, x);
-    assert(result == -1);
+    assert(result == 0);
 }
 </td>
                 <td>""
@@ -140,27 +109,57 @@
 </td>
                 <td>""
 </td>
-                <td>arr = {}, x = 10
+                <td>arr = {2, 3, 4, 10, 40}, x = 2
 </td>
-                <td>result = -1
+                <td>result = 0
 </td>
-                <td>result = -1
+                <td>result = 0
 </td>
                 <td>PASS
 </td>
             </tr>
             
             <tr>
-                <td>test_binary_search_single_element_array_1.0
+                <td>test_binary_search_element_at_end_1.0
 </td>
-                <td>等价类边界值
+                <td>边界值分析
 </td>
-                <td>测试二分查找函数在单个元素数组中查找的情况
+                <td>测试二分查找函数在数组末尾找到目标元素时是否返回正确的索引
 </td>
-                <td>void test_binary_search_single_element_array() {
+                <td>void test_binary_search_element_at_end() {
+    int arr[] = {2, 3, 4, 10, 40};
+    int n = sizeof(arr) / sizeof(arr[0]);
+    int x = 40; // 要查找的元素在数组末尾
+    int result = binarySearch(arr, 0, n - 1, x);
+    assert(result == n - 1);
+}
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>arr = {2, 3, 4, 10, 40}, x = 40
+</td>
+                <td>result = 4
+</td>
+                <td>result = 4
+</td>
+                <td>PASS</td>
+            </tr>
+            
+            <tr>
+                <td>test_binary_search_single_element_list_1.0
+</td>
+                <td>边界值分析
+</td>
+                <td>测试二分查找函数在单个元素数组中查找目标元素的情况
+</td>
+                <td>void test_binary_search_single_element_list() {
     int arr[] = {10};
     int n = sizeof(arr) / sizeof(arr[0]);
-    int x = 10;
+    int x = 10; // 要查找的元素在数组中
     int result = binarySearch(arr, 0, n - 1, x);
     assert(result == 0);
 }
@@ -176,6 +175,37 @@
                 <td>result = 0
 </td>
                 <td>result = 0
+</td>
+                <td>PASS
+</td>
+            </tr>
+            
+            <tr>
+                <td>test_binary_search_empty_array_1.0
+</td>
+                <td>边界值分析
+</td>
+                <td>测试二分查找函数在空数组中查找目标元素的情况
+</td>
+                <td>void test_binary_search_empty_array() {
+    int arr[] = {};
+    int n = sizeof(arr) / sizeof(arr[0]);
+    int x = 10; // 要查找的元素
+    int result = binarySearch(arr, 0, n - 1, x);
+    assert(result == -1);
+}
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>""
+</td>
+                <td>arr = {}, x = 10
+</td>
+                <td>result = -1
+</td>
+                <td>result = -1
 </td>
                 <td>PASS</td>
             </tr>

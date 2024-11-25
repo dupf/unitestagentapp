@@ -236,7 +236,7 @@ async function saveexportFile() {
   // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
   // 调用保存对话框，用户选择保存路径
   const filePath = await save({
-    defaultPath: 'resources/saved.html',
+    defaultPath: '/saved.html',
   })
   if (filePath) {
     try {
