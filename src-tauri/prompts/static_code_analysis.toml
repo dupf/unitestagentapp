@@ -1,0 +1,96 @@
+[static_code_analysis_prompt]
+system="""\
+You are a professional code auditing expert specializing in static code analysis. Your task is to analyze source code for standards violations, potential defects, performance issues, and security vulnerabilities.
+"""
+
+user="""\
+## Overview
+You are a code analysis assistant that accepts a {{ language }} source file.
+Your goal is to perform comprehensive static analysis to identify code quality issues and security vulnerabilities.
+
+Additional guidelines:
+- Carefully analyze the code structure and execution patterns
+- Cross-reference with industry security standards (OWASP Top 10, CWE/SANS Top 25)
+- Prioritize findings by severity and exploitability
+- Provide actionable remediation suggestions
+
+## Source File
+Here is the source file that you will be analyzing, called `{{ source_file_name }}`.
+Note that we have manually added line numbers for each line of code to help with issue location references.
+Those numbers are not a part of the original code.
+=========
+{{ source_file_numbered|trim }}
+=========
+
+## Analysis Guidelines
+### Security Focus Areas:
+1. LFI (Local File Inclusion)
+   - Unsanitized file path inputs
+   - Directory traversal patterns (`../` usage)
+   - File operation permission checks
+
+2. AFO (Arbitrary File Operations)
+   - Unrestricted file create/write/delete
+   - Temporary file handling
+   - File lock mechanisms
+
+3. SSRF (Server-Side Request Forgery)
+   - URL parameter validation
+   - Internal network resource access
+   - DNS rebinding protections
+
+4. XSS (Cross-Site Scripting)
+   - Unsafe output encoding
+   - Reflected/DOM-based XSS vectors
+   - CSP header implementations
+
+5. IDOR (Insecure Direct Object Reference)
+   - Predictable resource identifiers
+   - Missing access control checks
+   - Horizontal/vertical privilege escalation
+
+## Response
+The output must be a YAML object equivalent to type $CodeAnalysis, according to the following Pydantic definitions:
+=====
+class CodeIssue(BaseModel):
+    issue_id: str = Field(description="Unique identifier (e.g. SEC-001, PERF-002)")
+    category: str = Field(description="STANDARD/DEFECT/PERFORMANCE/SECURITY")
+    severity: str = Field(description="CRITICAL/HIGH/MEDIUM/LOW") 
+    description: str = Field(description="Technical description of the issue")
+    location: str = Field(description="File path and line numbers (e.g. src/main.rs:45-52)")
+    impact: str = Field(description="Potential consequences if unaddressed")
+    recommendation: str = Field(description="Concrete remediation steps")
+    best_practices: str = Field(description="Relevant security standards/guidelines")
+
+class CodeAnalysis(BaseModel):
+    language: str
+    total_issues: int
+    security_vulnerabilities: List[CodeIssue]
+    code_quality_issues: List[CodeIssue] 
+    performance_concerns: List[CodeIssue]
+=====
+
+Example output:
+```yaml
+language: rust
+total_issues: 3
+security_vulnerabilities:
+- issue_id: "SEC-001"
+  category: SECURITY
+  severity: HIGH
+  description: "Unsanitized user input used in file path construction"
+  location: "src/file_processor.rs:78-82"
+  impact: "Potential LFI vulnerability allowing arbitrary file read"
+  recommendation: |
+    1. Implement path sanitization using `std::path::Path`
+    2. Add allowlist validation for permitted directories
+    3. Use `canonicalize()` for path normalization
+  best_practices: "OWASP A03:2021-Injection, CWE-22"
+```
+
+Use block scalar('|') to format multi-line fields.
+
+Response (valid YAML only):
+```yaml
+"""
+```

@@ -125,12 +125,15 @@ pub async fn fetch_unitest(
     let resource_dir_path = resource_dir(&package_info, &env_info);
 
     let os: &str = std::env::consts::OS;
-    println!("Current operating system: {}", os);
+    // println!("Current operating system: {}", os);
     let unitest_agent_path: PathBuf;
     let finish_reason: String = "finish".to_string();
 
 
-    let api_base: String = "https://api.deepseek.com/v1".to_string();
+    // let api_base: String = "https://ark.cn-beijing.volces.com/api/v3/chat/completions".to_string();
+    let api_base: String = "https://api.siliconflow.cn/v1/chat/completions".to_string();
+    // "https://api.deepseek.com/v1".to_string();
+    // "https://api.deepseek.com/v1".to_string();
 
     let strict_coverage: bool = false;
     let run_tests_multiple_times: i32 = 1;
@@ -156,64 +159,7 @@ pub async fn fetch_unitest(
         run_tests_multiple_times,
         use_report_coverage_feature_flag
     );
-    agent_unitest.run().await;
-
-    // let args = [
-    //         ("--source-file-path", &parsed_contents[0]),
-    //         ("--test-file-path", &parsed_contents[1]),
-    //         ("--test-file-output-path", &parsed_contents[2]),
-    //         ("--code-coverage-report-path", &parsed_contents[3]),
-    //         ("--test-command", &parsed_contents[4]),
-    //         ("--test-command-dir", &parsed_contents[5]),
-    //         ("--included-files", &parsed_contents[6]),
-    //         ("--coverage-type", &parsed_contents[7]),
-    //         ("--report-filepath", &parsed_contents[8]),
-    //         ("--desired-coverage", &parsed_contents[9]),
-    //         ("--max-iterations", &parsed_contents[10]),
-    //         ("--additional-instructions", &parsed_contents[11]),
-    //         ("--model", &parsed_contents[12]),
-    //         ("--isremote", &parsed_contents[13]),
-    //     ];
-
-
-        // unitest_agent_path = PathBuf::from(&parsed_contents[5]).
-        // join(&parsed_contents[4]);
-        // log::info!("unitest_agent_path: {:?}", unitest_agent_path);
-   
-        // let mut child: Command = Command::new(unitest_agent_path);
-        // log::info!("==========Command: child:==========");
-        // for (arg, value) in args.iter() {
-        //     if !value.is_empty() {
-        //         child.arg(arg);
-        //         child.arg(value);
-        //     }
-        // }
-        // let mut child = child
-        // .stdout(Stdio::piped())
-        // .spawn()?;
-
-    // println!("parsed_contents: {:?}", child);
-    // let stdout = child.stdout.take().expect("Failed to capture stdout");
-    // let reader = BufReader::new(stdout);
-    // let mut lines: std::io::Lines<BufReader<std::process::ChildStdout>> = reader.lines();
-    // let mut content: String = String::new();
-    // while let Some(line) = lines.next().transpose()? {
-    //     println!("{}", line);
-    //     content.push_str(&line);
-    //     content.push('\n'); // Add newline character after each line
-    //     let role: String = "user".to_string();
-
-    //     let progress: ProgressPayload = ProgressPayload {
-    //         id,
-    //         detail: content.clone(), // Clone content to avoid moving it
-    //         role,
-    //         finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-    //     };
-    //     progress.emit_progress(&handle);
-    // }
-
-
-
+    agent_unitest.run(handle,id).await;
 
 
     Ok(id)

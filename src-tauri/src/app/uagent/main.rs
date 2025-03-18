@@ -57,7 +57,7 @@ pub struct Args {
     #[arg(long, default_value = "")]
     additional_instructions: String,
 
-    #[arg(long, default_value = "deepseek-coder")]
+    #[arg(long, default_value = "deepseek-reasoner")]
     model: String,
 
     #[arg(long, default_value_t = true)]
@@ -104,18 +104,7 @@ use crate::unitest_agent_test_generator::TestYaml;
     );
     let mut agent_unitest: UnitestAgent = agent_unitest;
     agent_unitest.run();
-    // let content = std::fs::read_to_string("src/tst.toml").unwrap();
-    // let yaml_struct: TestYaml = match serde_yaml::from_str(&content) {
-    //     Ok(tests) => {
-    //         println!("====tests:==== {:?}", tests);
-    //         tests
-    //     }
-    //     Err(e) => {
-    //         // error!("Error parsing YAML response: {}", e);
-    //         println!("====Error parsing YAML response: {}", e);
-    //         panic!("Error parsing YAML response: {}", e);
-    //     }
-    // };
+
 
     
 }

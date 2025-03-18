@@ -4,21 +4,6 @@ use std::error::Error;
 use std::time::Duration;
 use tokio::time::sleep;
 // use wandb::TraceMeta;
-use tauri::{AppHandle, Manager};
-
-#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
-pub struct ProgressPayload {
-    pub id: u64,
-    pub detail: String,
-    pub role: String,
-    pub finish_reason: String,
-}
-
-impl ProgressPayload {
-    pub fn emit_progress(&self, handle: &AppHandle) {
-        handle.emit_all("CHAT_FETCHEING_PROGRESS", &self).ok();
-    }
-}
 
 use futures::StreamExt; // Add this line to bring StreamExt into scope
 
@@ -57,7 +42,7 @@ impl AICaller {
     pub fn new(model: &str, api_base: &str) -> Self {
         let open_ai: OpenAI<OpenAIConfig>;
         match model {
-            "deepseek-reasoner" => {
+            "deepseek-coder" => {
                 open_ai = OpenAI::default()
                     .with_config(
                         OpenAIConfig::default()
@@ -95,7 +80,7 @@ impl AICaller {
         ];
 
         //We can now combine these into a simple LLM chain:
-        let chain: langchain_rust::chain::LLMChain = LLMChainBuilder::new()
+        let chain = LLMChainBuilder::new()
             .prompt(prompt_info)
             .llm(self.open_ai.clone())
             .build()
@@ -121,13 +106,11 @@ impl AICaller {
 
     pub async fn call_remotedeepseekstream(
         &self,
-        handle: &AppHandle,
-        id: u64,
         prompt: &std::collections::HashMap<String, String>,
         max_tokens: usize,
     ) -> Result<String, Box<dyn std::error::Error>> {
         
-        println!("==call_remotedeepseekstream:== {}", prompt["user"].clone());
+        // println!("==call_remotedeepseekstream:== {}", prompt["user"].clone());
         // Create the OpenAI instance with DeepSeek configuration
         let prompt_info: langchain_rust::prompt::MessageFormatterStruct = message_formatter![
             fmt_message!(Message::new_system_message(prompt["system"].clone())),
@@ -149,9 +132,6 @@ impl AICaller {
             .await
             .unwrap();
 
-        let finish_reason: String = "finish".to_string();
-        let role: String = "user".to_string();
-
         let mut output = String::new();
         while let Some(result) = stream.next().await {
             match result {
@@ -159,22 +139,10 @@ impl AICaller {
                     // 使用 content() 方法获取实际内容
                     value.to_stdout().unwrap();
                     output.push_str(&value.content);
-
-
-                    let progress: ProgressPayload = ProgressPayload {
-                        id,
-                        detail: value.content.clone(), 
-                        role: role.clone(),
-                        finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-                    };
-                    progress.emit_progress(&handle);
-                
                 }
 
                 Err(e) => return Err(Box::new(e)),
             }
-        
-            
         }
         Ok(output)
     }

@@ -77,6 +77,8 @@
         "signingIdentity": null
       },
       "resources": [
+        "resources",
+        "prompts"
       ],
       "shortDescription": "unitestagent",
       "targets": "all",

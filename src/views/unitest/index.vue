@@ -264,41 +264,6 @@ async function saveexportFile() {
   }
 }
 
-// function handleExportReport() {
-//   if (loading.value)
-//     return
-//   const d = dialog.warning({
-//     title: t('chat.exportWord'),
-//     content: t('chat.exportWordConfirm'),
-//     positiveText: t('common.yes'),
-//     negativeText: t('common.no'),
-//     onPositiveClick: async () => {
-//       try {
-//         d.loading = true
-//         // const ele = document.getElementById('image-wrapper')
-//         // const canvas = await html2canvas(ele as HTMLDivElement, {
-//         //   useCORS: true,
-//         // })
-//         // const imgData = canvas.toDataURL('image/png')
-//         // const binaryData = atob(imgData.split('base64,')[1])
-//         // const data = []
-//         // for (let i = 0; i < binaryData.length; i++)
-//         //   data.push(binaryData.charCodeAt(i))
-//         await invoke('download_report', { src_path: '', dest_path: 'Export.jpg' })
-//         // await invoke('download_report', { name: 'ChatGPT-xxxx.jpg', blob: data })
-//         ms.success(t('chat.exportSuccess'))
-//         Promise.resolve()
-//       }
-//       catch (error: any) {
-//         ms.error(t('chat.exportFailed'))
-//       }
-//       finally {
-//         d.loading = false
-//       }
-//     },
-//   })
-// }
-
 function handleDelete(index: number) {
   if (loading.value)
     return
@@ -327,21 +292,6 @@ function handleClear() {
     },
   })
 }
-
-// function handleEnter(event: KeyboardEvent) {
-//   if (!isMobile.value) {
-//     if (event.key === 'Enter' && !event.shiftKey) {
-//       event.preventDefault()
-//       handleSubmit()
-//     }
-//   }
-//   else {
-//     if (event.key === 'Enter' && event.ctrlKey) {
-//       event.preventDefault()
-//       handleSubmit()
-//     }
-//   }
-// }
 
 function handleStop() {
   if (loading.value) {
@@ -489,13 +439,16 @@ onUnmounted(() => {
           </NAutoComplete> -->
           <!-- <NButton type="primary" :disabled="buttonDisabled" :name="生成测" @click="handleSubmit"> -->
           <!-- <NButton type="primary" :disabled="buttonDisabled"  @click="handleSubmit"> -->
-          <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-            <template #icon>
-              <span class="dark:text-black">
-                <SvgIcon icon="ri:send-plane-fill" />
-              </span>
-            </template>
-          </NButton>
+
+          <NTooltip content="生成单元测试">
+            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
+              <template #icon>
+                <span class="dark:text-black">
+                  <SvgIcon icon="ri:send-plane-fill" />
+                </span>
+              </template>
+            </NButton>
+          </NTooltip>
         </div>
       </div>
     </footer>

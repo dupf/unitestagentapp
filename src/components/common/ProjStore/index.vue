@@ -8,8 +8,7 @@ import { t } from '@/locales'
 const UnitestStore = useUnitestStore()
 const ms = useMessage()
 const formRef = ref<FormInst | null>(null)
-// const userInfo = computed(() => UnitestStore.userInfo)
-// const userConfig = computed(() => UnitestStore.userConfig)
+
 const UnitestConfig = computed(() => UnitestStore.UnitestConfig)
 
 const unitestModel = ref({

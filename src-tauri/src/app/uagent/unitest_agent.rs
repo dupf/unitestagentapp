@@ -4,6 +4,7 @@ use std::io::Write;
 use std::path::Path;
 use std::process;
 
+use tauri::{AppHandle, Manager};
 
 use crate::app::uagent::{
     custom_logger::CustomLogger,
@@ -34,6 +35,8 @@ pub struct UnitestAgent {
     use_report_coverage_feature_flag: bool,
     test_gen: UnitTestAgentTestGenerator,
 }
+
+
 
 impl UnitestAgent {
     pub fn new(
@@ -72,7 +75,7 @@ impl UnitestAgent {
             isremote,
         );
 
-        let unitest_agent = UnitestAgent {
+        let unitest_agent: UnitestAgent = UnitestAgent {
             source_file_path,
             test_file_path,
             test_file_output_path,
@@ -132,21 +135,20 @@ impl UnitestAgent {
         }
     }
 
-    pub async fn run(&mut self) {
+    pub async fn run(&mut self,handle: AppHandle, id: u64) {
         let mut iteration_count = 0;
         println!("==self.test_gen:== ======");
-        self.test_gen.initial_test_suite_analysis().await;
+        self.test_gen.initial_test_suite_analysis(handle.clone(),id).await;
         let mut test_results_list: Vec<TestDetails> =
             Vec::new();
-        while iteration_count < self.max_iterations {
-            let generated_tests_result = self.test_gen.generate_tests(4096, false);
 
-            // if generated_tests_result.is_ok() && generated_tests_result.as_ref().unwrap().is_empty()
-            // {
-            //     println!("Error generating tests: ");
-            //     // continue;
-            // }
-            let generated_tests_result_vec = match generated_tests_result.await {
+        let finish_reason: String = "finish".to_string();
+        let role: String = "user".to_string();
+
+        while iteration_count < self.max_iterations {
+            let generated_tests_result = self.test_gen.generate_tests(handle.clone(),id, 4096, false);
+
+            let generated_tests_result_vec: Vec<TestDetails> = match generated_tests_result.await {
                 Ok(tests) => tests,
                 Err(e) => {
                     println!("Error generating tests: {}", e);
@@ -167,6 +169,7 @@ impl UnitestAgent {
                     if !found {
                         test_results_list.push(generated_test);
                     }
+
                 }
             }
             iteration_count += 1;
@@ -174,37 +177,5 @@ impl UnitestAgent {
 
         ReportGenerator::generate_report(&test_results_list, &self.report_filepath).await;
     }
-    // if self.test_gen.current_coverage >= (self.test_gen.desired_coverage / 100.0) {
-    //     self.logger.info(&format!(
-    //         "Reached above target coverage of {}% (Current Coverage: {:.2}%) in {} iterations.",
-    //         self.test_gen.desired_coverage,
-    //         self.test_gen.current_coverage * 100.0,
-    //         iteration_count
-    //     ));
-    // } else if iteration_count == self.args.max_iterations {
-    //     let failure_message = format!(
-    //         "Reached maximum iteration limit without achieving desired coverage. Current Coverage: {:.2}%",
-    //         self.test_gen.current_coverage * 100.0
-    //     );
-
-    //     if self.args.strict_coverage {
-    //         self.logger.error(&failure_message);
-    //         process::exit(2);
-    //     } else {
-    //         self.logger.info(&failure_message);
-    //     }
-    // }
-
-    // self.logger.info(&format!(
-    //     "Total number of input tokens used for LLM model {}: {}",
-    //     self.test_gen.llm_caller.model, self.test_gen.total_input_token_count
-    // ));
-
-    // self.logger.info(&format!(
-    //     "Total number of output tokens used for LLM model {}: {}",
-    //     self.test_gen.llm_caller.model,
-    //     // self.test_gen.total_output_token_count
-    //     self.test_gen.total_input_token_count
-    // ));
-    // ReportGenerator::generate_report(&test_results_list, &self.args.report_filepath);
+    
 }

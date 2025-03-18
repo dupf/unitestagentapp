@@ -125,6 +125,8 @@ impl ReportGenerator {
 
         context.insert("results", &results_en);
 
+        print!("======context:===== {:?}", context);
+
         let html_content = match tera.render("report", &context) {
             Ok(content) => content,
             Err(e) => {
@@ -132,6 +134,10 @@ impl ReportGenerator {
                 return Err(Box::new(e));
             }
         };
+
+        println!("======html_content:===== {:?}", html_content);
+        println!("======file_path:===== {:?}", file_path);
+        
         fs::write(file_path, html_content)?;
         Ok(())
     }
@@ -153,8 +159,13 @@ impl ReportGenerator {
                 return Err(Box::new(e));
             }
         };
-        let resource_path = std::env::current_dir().unwrap().join("resources").join(file_path);
-        fs::write(  resource_path, html_content)?;
+        let resource_dir = std::env::current_dir().unwrap().join("resources");
+        std::fs::create_dir_all(&resource_dir)?;
+        let resource_path = resource_dir.join(file_path);
+        
+
+        fs::write(&resource_path, html_content)?;
+        opener::open(resource_path)?;
         Ok(())
     }
 }

@@ -198,8 +198,6 @@ pub async fn fetch_unitest_api(
         .collect();
     log::info!("> receive message: {}", id);
 
-    // let package_info = tauri::PackageInfo(&handle);
-    // let env_info = tauri::env(&handle);
     use tauri::Env;
     use tauri::PackageInfo;
 
@@ -208,14 +206,11 @@ pub async fn fetch_unitest_api(
 
     let resource_dir_path = resource_dir(&package_info, &env_info);
     
-    // let unitest_agent_path = resource_dir_path
-    //     .unwrap()
-    //     .join("resources/x64/unitest_agent_bin/unitest_agent_bin");
     let os: &str = std::env::consts::OS;
     println!("Current operating system: {}", os);
     let unitest_agent_path: PathBuf;
     let finish_reason: String = "finish".to_string();
-    // println!("parsed_contents: ===");
+
     let args = [
             ("--source-file-path", &parsed_contents[0]),
             ("--test-file-path", &parsed_contents[1]),
@@ -251,7 +246,7 @@ pub async fn fetch_unitest_api(
         // .spawn()?;
     println!("parsed_contents: {:?}", child);
     let stdout = child.stdout.take().expect("Failed to capture stdout");
-    let reader = BufReader::new(stdout);
+    let reader: BufReader<std::process::ChildStdout> = BufReader::new(stdout);
     let mut lines: std::io::Lines<BufReader<std::process::ChildStdout>> = reader.lines();
     let mut content: String = String::new();
     while let Some(line) = lines.next().transpose()? {

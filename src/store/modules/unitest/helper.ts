@@ -30,6 +30,8 @@ export interface UnitestState {
   UnitestConfig: UnitestConfig
 }
 
+// 'deepseek-reasoner',
+
 export function defaultSetting(): UnitestState {
   return {
     UnitestInfo: {
@@ -37,7 +39,7 @@ export function defaultSetting(): UnitestState {
       name: null,
     },
     UnitestConfig: {
-      sourcefilePath: '/Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/JZ20_TZB_AllDatav2.c',
+      sourcefilePath: '/Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/twofen.c',
       testfilePath: '/Users/mac/Documents/work/htzr/ZT2_CPU_SW004_V1.0.0.0_T/4_Source/testJZ20_TZB_AllData.c',
       testfileOutputPath: './',
       codecoveragereportPath: '',
@@ -47,16 +49,16 @@ export function defaultSetting(): UnitestState {
       coverageType: '',
       reportFilepath: '',
       desiredCoverage: 90,
-      maxIterations: 2,
+      maxIterations: 1,
       additionalInstructions: '',
-      model: 'deepseek/deepseek-coder',
+      model: 'Pro/deepseek-ai/DeepSeek-R1',
       isRemote: true,
     },
   }
 }
 
 export function allModels(): string[] {
-  return ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-4', 'gpt-4-0314', 'gpt-4-32k', 'gpt-4-32k-0314']
+  return ['gpt-3.5-turbo', 'gpt-3.5-turbo-0301', 'gpt-4', 'gpt-4-0314', 'gpt-4-32k', 'gpt-4-32k-0314', 'deepseek-reasoner']
 }
 
 export function getLocalState(): UnitestState {

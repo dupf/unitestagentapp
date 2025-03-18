@@ -6,6 +6,7 @@ use std::fs;
 use std::path::PathBuf;
 // use crate::llm_caller::LLMCaller;
 // use crate::llm_request::LLMRequest;
+use tauri::{AppHandle, Manager};
 
 use crate::app::uagent::{
     prompt_builder::PromptBuilder,
@@ -100,6 +101,21 @@ pub struct TestDetailsEn {
     #[serde(rename = "conclusion")]
     pub conclusion: Option<String>,
 }
+
+
+#[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
+pub struct ProgressPayload {
+    pub id: u64,
+    pub detail: String,
+    pub role: String,
+    pub finish_reason: String,
+}
+
+impl ProgressPayload {
+    pub fn emit_progress(&self, handle: &AppHandle) {
+        handle.emit_all("CHAT_FETCHEING_PROGRESS", &self).ok();
+    }
+}
 impl TestDetails {
     pub fn to_english(&self) -> TestDetailsEn {
         TestDetailsEn {
@@ -153,7 +169,7 @@ impl UnitTestAgentTestGenerator {
         // let preprocessor: <FilePreprocessor as Try>::Output = FilePreprocessor::new(&test_file_path)?;
         let preprocessor = FilePreprocessor::new(test_file_path.to_string());
 
-        let prompt_builder_orign = PromptBuilder::new(
+        let prompt_builder_orign: PromptBuilder = PromptBuilder::new(
             &source_file_path, // Now we can use the original String
             &preprocessor.path_to_file,
             &code_coverage_report_path, // Now we can use the original String
@@ -226,7 +242,7 @@ impl UnitTestAgentTestGenerator {
                         content.push(file_content);
                         file_names.push(file_path);
                     }
-                    Err(e) => eprintln!("Error reading file {}: {}", file_path, e),
+                    Err(e) => eprintln!("included_files not Found && Error reading file {}: {}", file_path, e),
                 }
             }
             if !content.is_empty() {
@@ -249,43 +265,18 @@ impl UnitTestAgentTestGenerator {
         // content
     }
 
-    fn build_promptss(&self) -> Result<(String, String), tera::Error> {
-//     // let failed_test_runs_value = if self.failed_test_runs.is_empty() {
-//     //     String::new()
-//     // } else {
-//     //     // Format failed test runs similar to Python implementation
-//     //     // Implementation details here...
-//     //     String::new()
-//     // };
-//     // self.prompt_builder: Result<PromptBuilder, std::io::Error>   = PromptBuilder::new(
-//     //     &self.source_file_path.to_string_lossy()    ,
-//     //     &self.test_file_path.to_string_lossy(),
-//     //     "",
-//     //     &self.included_files,
-//     //     &self.additional_instructions,
-//     //     "failed_test_runs",
-//     //     &self.language,
-//     // );
-//      let (system_prompt, user_prompt) = self.prompt_builder.build_prompt()?;
-//      Ok((system_prompt, user_prompt))
-//      // let (system_prompt, user_prompt ) = prompt_builder.build_prompt();
-//     // let prompt = prompt_builder.build_prompt().unwrap();
-//     // build_prompt_custom("analyze_suite_test_headers_indentation");
-//     // Ok(prompt_builder.build_prompt())
-//     // Ok(prompt_builder.build_prompt().unwrap())
-        let system_prompt = "123".to_string();
-        let user_prompt = "456".to_string();
-        Ok((system_prompt, user_prompt))
-    }
+    
 
     async fn call_remoteinfo(
         &mut self,
+        handle: AppHandle,
+        id: u64,
         prompt: &HashMap<String, String>,
     ) -> Result<String, Box<dyn std::error::Error>> {
         // match self.llm_caller.call_remotedeepseek(prompt, 4096).await
         match self
             .llm_caller
-            .call_remotedeepseekstream(prompt, 4096)
+            .call_remotedeepseekstream(&handle,id,  prompt, 4096)
             .await
         {
             Ok(response) => {
@@ -296,6 +287,19 @@ impl UnitTestAgentTestGenerator {
                     .filter(|c| c.is_ascii() || c.is_alphabetic())
                     .collect::<String>();
                 println!("==response:== {}", cleaned_response);
+
+            //    let finish_reason: String = "finish".to_string();
+            //    let role: String = "user".to_string();
+
+            //    let progress: ProgressPayload = ProgressPayload {
+            //             id,
+            //             detail: response.clone(), // 使用实际测试信息而不是固定字符串
+            //             role: role.clone(),
+            //             finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
+            //         };
+            //     progress.emit_progress(&handle);
+
+                
                 Ok(cleaned_response)
             }
             Err(e) => {
@@ -304,7 +308,7 @@ impl UnitTestAgentTestGenerator {
             }
         }
     }
-    pub async fn initial_test_suite_analysis(&mut self) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn initial_test_suite_analysis(&mut self,handle: AppHandle, id: u64) -> Result<(), Box<dyn std::error::Error>> {
         let mut test_headers_indentation: Option<String> = None;
         let allowed_attempts = 3;
         let mut counter_attempts = 0;
@@ -324,7 +328,7 @@ impl UnitTestAgentTestGenerator {
             prompt_map.insert("system".to_string(), prompt_headers_indentation.0);
             prompt_map.insert("user".to_string(), prompt_headers_indentation.1);
 
-            let response:String = self.call_remoteinfo(&prompt_map).await?;
+            let response:String = self.call_remoteinfo(handle.clone(), id, &prompt_map,).await?;
 
 
             // println!("== get the remote response info is :== {}", response);
@@ -370,7 +374,7 @@ impl UnitTestAgentTestGenerator {
             prompt_map.insert("user".to_string(), prompt_test_insert_line.1);
 
 
-            let response = self.call_remoteinfo(&prompt_map).await?;
+            let response = self.call_remoteinfo(handle.clone(),id,&prompt_map).await?;
           
             // self.total_input_token_count += prompt_token_count;
             // self.total_output_token_count += response_token_count
@@ -419,6 +423,8 @@ impl UnitTestAgentTestGenerator {
 
     pub async fn generate_tests(
         &mut self,
+        handle: AppHandle,
+        id: u64,
         max_tokens: usize,
         dry_run: bool,
     ) -> Result<Vec<TestDetails>, Box<dyn std::error::Error>> {
@@ -434,11 +440,19 @@ impl UnitTestAgentTestGenerator {
             prompt_map.insert("system".to_string(), prompt_tests.0);
             prompt_map.insert("user".to_string(), prompt_tests.1);
 
-            // tokio::runtime::Runtime::new()?
-            //     .block_on(async { self.call_remoteinfo(&prompt_map).await })?
-
-            self.call_remoteinfo(&prompt_map).await?
+            self.call_remoteinfo(handle.clone(),id,&prompt_map).await?
         };
+
+        // let finish_reason: String = "finish".to_string();
+        // let role: String = "user".to_string();
+
+        // let progress: ProgressPayload = ProgressPayload {
+        //                 id,
+        //                 detail: response.clone(), // 使用实际测试信息而不是固定字符串
+        //                 role: role.clone(),
+        //                 finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
+        //             };
+        // progress.emit_progress(&handle);
         // Extract YAML content from between ```yaml and ``` markers
         let yaml_content = if let Some(content) = response.split("```yaml").nth(1) {
             if let Some(yaml) = content.split("```").next() {
@@ -452,15 +466,11 @@ impl UnitTestAgentTestGenerator {
         // Parse YAML response into TestDetails
         let yaml_content2: String = format!("{}", yaml_content);
 
-        // println!("\n ====yaml_content2:==== {}", yaml_content2);
         let yaml_struct: TestYaml = match serde_yaml::from_str(&yaml_content2) {
             Ok(tests) => {
-                // println!("====tests:==== ");
                 tests
             }
             Err(e) => {
-                // error!("Error parsing YAML response: {}", e);
-                println!("====Error parsing YAML response: {}", e);
                 TestYaml {
                     language: "".to_string(),
                     existing_test_function_signature: "".to_string(),

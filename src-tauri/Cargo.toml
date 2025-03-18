@@ -25,6 +25,7 @@ tokio = "1.26.0"
 reqwest = { version="0.11.14", features= ["stream", "socks"] }
 rocket = {"git" = "https://github.com/SergioBenitez/Rocket"}
 bytes = "*"
+opener = "0.6.0"
 tokio-util = {version="0.7.7", feature= ["io"] }
 futures = "0.3.27"
 eventsource-stream = "0.2.3"

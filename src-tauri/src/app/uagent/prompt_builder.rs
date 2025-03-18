@@ -68,7 +68,8 @@ impl PromptBuilder {
             .unwrap()
             .to_string_lossy()
             .into_owned();
-
+        
+        println!("\n=== Context Variables ==={}", source_file_path);
         let source_file = Self::read_file(source_file_path).unwrap();
         let test_file = Self::read_file(test_file_path).unwrap();
 
@@ -122,6 +123,9 @@ impl PromptBuilder {
     }
 
     fn read_file(file_path: &str) -> io::Result<String> {
+        if !Path::new(file_path).exists() {
+            File::create(file_path)?;
+        }
         let mut file = File::open(file_path)?;
         let mut contents = String::new();
         match file.read_to_string(&mut contents) {
