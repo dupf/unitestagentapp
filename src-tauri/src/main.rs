@@ -13,6 +13,42 @@ use tauri_plugin_log::{
   LogTarget,
 };
 
+// #[tauri::command]
+// async fn generate_static_analysis_report(
+//     handle: tauri::AppHandle,
+//     analysis_id: u64,
+// ) -> Result<String, String> {
+//     // 从保存的数据中获取静态代码分析结果
+//     let generator = app::uagent::unitest_agent_test_generator::UnitTestAgentTestGenerator::new(
+//         "",
+//         "",
+//         "",
+//         "",
+//         "",
+//         None,
+//         None,
+//         Some(""),
+//         Some(0),
+//         "deepseek-tester",
+//         "",
+//         false,
+//         false,
+//     ).map_err(|e| e.to_string())?;
+    
+//     // 生成静态代码分析报告
+//     let code_analysis_result = generator.generate_static_sec(handle.clone(), analysis_id, 0, false).await
+//         .map_err(|e| e.to_string())?;
+    
+//     // 生成报告
+//     let report_path = app::uagent::report_generator::ReportGenerator::generate_static_analysis_report(
+//         handle,
+//         &code_analysis_result,
+//     ).await
+//         .map_err(|e| e.to_string())?;
+    
+//     Ok(report_path)
+// }
+
 fn main() {
   let mut log = tauri_plugin_log::Builder::default()
   .targets([
@@ -42,11 +78,12 @@ fn main() {
     cmd::download::convert_html_to_word,
     cmd::window::download_report,
     cmd::window::new_window,
-    uagent::unitest::fetch_unitest
+    uagent::unitest::fetch_unitest,
+    // generate_static_analysis_report,
   ])
   .setup(builder::setup);
 
-  
+
   #[cfg(target_os = "macos")]
   {
     builder = builder.on_window_event(|event| match event.event() {

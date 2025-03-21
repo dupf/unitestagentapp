@@ -69,7 +69,7 @@ impl PromptBuilder {
             .to_string_lossy()
             .into_owned();
         
-        println!("\n=== Context Variables ==={}", source_file_path);
+        // println!("\n=== Context Variables ==={}", source_file_path);
         let source_file = Self::read_file(source_file_path).unwrap();
         let test_file = Self::read_file(test_file_path).unwrap();
 
@@ -187,9 +187,7 @@ impl PromptBuilder {
         section: &str,
     ) -> Result<(String, String), tera::Error> {
 
-
         let mut context = Context::new();
-
         context.insert("source_file_name", &self.source_file_name);
         context.insert("test_file_name", &self.test_file_name);
         context.insert("source_file", &self.source_file);
@@ -206,7 +204,7 @@ impl PromptBuilder {
         context.insert("language", &self.language);
         context.insert("max_tests", &MAX_TESTS_PER_RUN);
         
-        println!("==context:== {:?}", context);
+        // println!("==context:== {:?}", context);
         println!("==filename:== {:?}", filename);
         println!("==section:== {:?}", section);
         let config: PromptConfig = PromptConfig::from_file(filename).unwrap();

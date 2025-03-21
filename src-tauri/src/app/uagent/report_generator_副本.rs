@@ -238,7 +238,7 @@ impl ReportGenerator {
                 <p><strong>影响:</strong> {{ issue.impact }}</p>
                 <div class="recommendation">
                     <strong>修复建议:</strong><br>
-                    {{ issue.recommendation | replace("\n", "<br>") | safe }}
+                    {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
                 </div>
                 <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
             </div>
@@ -261,7 +261,7 @@ impl ReportGenerator {
                 <p><strong>影响:</strong> {{ issue.impact }}</p>
                 <div class="recommendation">
                     <strong>修复建议:</strong><br>
-                    {{ issue.recommendation | replace("\n", "<br>") | safe }}
+                    {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
                 </div>
                 <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
             </div>
@@ -284,7 +284,7 @@ impl ReportGenerator {
                 <p><strong>影响:</strong> {{ issue.impact }}</p>
                 <div class="recommendation">
                     <strong>修复建议:</strong><br>
-                    {{ issue.recommendation | replace("\n", "<br>") | safe }}
+                    {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
                 </div>
                 <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
             </div>
@@ -294,160 +294,6 @@ impl ReportGenerator {
     </body>
     </html>
     "#;
-
-    // 添加合并单元测试和静态代码分析的HTML模板
-    const COMBINED_TEMPLATE: &'static str = r###"
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>测试与代码分析报告</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 0; padding: 20px; }
-            .tab { display: none; }
-            .tab.active { display: block; }
-            .nav { margin-bottom: 20px; }
-            .nav a { margin-right: 15px; }
-            table { width: 100%; border-collapse: collapse; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            .card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; }
-            .high { color: red; }
-            .medium { color: orange; }
-            .low { color: blue; }
-        </style>
-    </head>
-    <body>
-        <h1>测试与代码分析报告</h1>
-        
-        <div class="nav">
-            <a href="#" onclick="showTab('summary')">总览</a>
-            <a href="#" onclick="showTab('tests')">单元测试报告</a>
-            <a href="#" onclick="showTab('analysis')">静态代码分析</a>
-        </div>
-        
-        <div id="summary" class="tab active">
-            <h2>总览</h2>
-         <div>
-            <p>测试用例数量: {{ test_results | length }}</p>
-            <p>测试覆盖率: 95%</p>
-         </div>
-
-            <p>静态代码分析问题数量: {{ analysis.total_issues }}</p>
-            <div>
-                <p>代码规范问题数量: {{ analysis.coding_standard_issues | length }}</p>
-                <p>性能问题数量: {{ analysis.performance_issues | length }}</p>
-                <p>安全漏洞数量: {{ analysis.security_vulnerabilities | length }}</p>
-            </div>
-        </div>
-        
-        <div id="tests" class="tab">
-            <h2>单元测试报告</h2>
-        <table>
-            <tr>
-                <th>测试用例编号</th>
-                <th>测试技术</th>
-                <th>测试用例描述</th>
-                <th>测试代码</th>
-                <th>全局变量</th>
-                <th>初始化代码</th>
-                <th>桩函数</th>
-                <th>输入</th>
-                <th>预期输出</th>
-                <th>实际输出</th>
-                <th>结论</th>
-            </tr>
-            {% for result in test_results %}
-            <tr>
-                <td>{{ result.test_number }}</td>
-                <td>{{ result.test_technique }}</td>
-                <td>{{ result.test_description }}</td>
-                <td>{{ result.test_code }}</td>
-                <td>{{ result.global_variables }}</td>
-                <td>{{ result.initialization_code }}</td>
-                <td>{{ result.stub_functions }}</td>
-                <td>{{ result.input }}</td>
-                <td>{{ result.expected_output }}</td>
-                <td>{{ result.actual_output }}</td>
-                <td>{{ result.conclusion }}</td>
-            </tr>
-            {% endfor %}
-        </table>
-      
-
-            
-        </div>
-        
-        <div id="analysis" class="tab">
-            <h2>静态代码分析</h2>
-            
-            {% if analysis.coding_standard_issues | length > 0 %}
-            <h3>代码规范问题 ({{ analysis.coding_standard_issues | length }})</h3>
-            {% for issue in analysis.coding_standard_issues %}
-            <div class="card">
-                <h4>{{ issue.issue_id }} - {{ issue.description }}</h4>
-                <p>严重性: {{ issue.severity }}</p>
-                <p>位置: {{ issue.location }}</p>
-               <p><strong>影响:</strong> {{ issue.impact }}</p>
-                <div class="recommendation">
-                    <strong>修复建议:</strong><br>
-
-                     {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
-                </div>
-                <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
-            </div>
-            {% endfor %}
-            {% endif %}
-            
-            {% if analysis.performance_issues | length > 0 %}
-            <h3>性能问题 ({{ analysis.performance_issues | length }})</h3>
-            {% for issue in analysis.performance_issues %}
-            <div class="card">
-                <h4>{{ issue.issue_id }} - {{ issue.description }}</h4>
-                <p>严重性: {{ issue.severity }}</p>
-                <p>位置: {{ issue.location }}</p>
-         <p><strong>影响:</strong> {{ issue.impact }}</p>
-                <div class="recommendation">
-                    <strong>修复建议:</strong><br>
-                     {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
-                </div>
-                <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
-
-            </div>
-            {% endfor %}
-            {% endif %}
-            
-            {% if analysis.security_vulnerabilities | length > 0 %}
-            <h3>安全漏洞 ({{ analysis.security_vulnerabilities | length }})</h3>
-            {% for issue in analysis.security_vulnerabilities %}
-            <div class="card">
-                <h4>{{ issue.issue_id }} - {{ issue.description }}</h4>
-                <p>严重性: {{ issue.severity }}</p>
-                <p>位置: {{ issue.location }}</p>
-                         <p><strong>影响:</strong> {{ issue.impact }}</p>
-                <div class="recommendation">
-                    <strong>修复建议:</strong><br>
-                     {{ issue.recommendation | replace(from="\n", to="<br>") | safe }}
-                </div>
-                <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
-            </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-        
-        <script>
-            function showTab(tabId) {
-                const tabs = document.getElementsByClassName('tab');
-                for (let i = 0; i < tabs.length; i++) {
-                    tabs[i].classList.remove('active');
-                }
-                document.getElementById(tabId).classList.add('active');
-                return false;
-            }
-        </script>
-    </body>
-    </html>
-    "###;
 
     pub async fn generate_report(
         handle: AppHandle,
@@ -582,94 +428,6 @@ impl ReportGenerator {
         // 写入文件
         fs::write(&report_path, html_content)?;
 
-        // 返回生成的报告文件路径
-        Ok(report_path.to_string_lossy().to_string())
-    }
-
-    // 添加生成合并报告的函数
-    pub async fn generate_combined_report(
-        handle: AppHandle,
-        test_results: &Vec<TestDetails>,
-        analysis: &CodeAnalysisResult,
-    ) -> Result<String, Box<dyn std::error::Error>> {
-
-        let test_results_en: Vec<TestDetailsEn> =
-        test_results.iter().map(|detail| detail.to_english()).collect();
-
-
-
-        let analysisEn = CodeAnalysisResultEn {
-            language: analysis.language.clone(),
-            total_issues: analysis.total_issues,
-            coding_standard_issues: analysis.coding_standard_issues.iter().map(|issue| CodeIssueEn {
-                issue_id: issue.issue_id.clone(),
-                category: issue.category.clone(),
-                severity: issue.severity.clone(),
-                description: issue.description.clone(),
-                location: issue.location.clone(),
-                impact: issue.impact.clone(),
-                recommendation: issue.recommendation.clone(),
-                best_practice: issue.best_practice.clone(),
-            }).collect(),
-            performance_issues: analysis.performance_issues.iter().map(|issue| CodeIssueEn {
-                issue_id: issue.issue_id.clone(),
-                category: issue.category.clone(),
-                severity: issue.severity.clone(),
-                description: issue.description.clone(),
-                location: issue.location.clone(),
-                impact: issue.impact.clone(),
-                recommendation: issue.recommendation.clone(),
-                best_practice: issue.best_practice.clone(),
-            }).collect(),
-            security_vulnerabilities: analysis.security_vulnerabilities.iter().map(|issue| CodeIssueEn {
-                issue_id: issue.issue_id.clone(),
-                category: issue.category.clone(),
-                severity: issue.severity.clone(),
-                description: issue.description.clone(),
-                location: issue.location.clone(),
-                impact: issue.impact.clone(),
-                recommendation: issue.recommendation.clone(),
-                best_practice: issue.best_practice.clone(),
-            }).collect(),
-        };
-
-        let mut tera = Tera::default();
-        if let Err(e) = tera.add_raw_template("report", Self::COMBINED_TEMPLATE) {
-            println!("Error adding raw template: {:?}", e);
-            return Err(Box::new(e));
-        }
-        
-        let mut context = Context::new();
-        context.insert("test_results", &test_results_en);
-        context.insert("analysis", &analysisEn);
-        
-        // 渲染HTML
-        let html_content = match tera.render("report", &context) {
-            Ok(content) => content,
-            Err(e) => {
-                println!("模板渲染错误: {:?}", e);
-                return Err(Box::new(e));
-            }
-        };
-        
-        // 保存到应用数据目录（可写目录）
-        let app_data = app_data_dir(&handle.config()).expect("无法获取应用数据目录");
-        let reports_dir = app_data.join("reports");
-        
-        // 确保报告目录存在
-        fs::create_dir_all(&reports_dir)?;
-        
-        // 创建报告文件名（使用时间戳确保唯一性）
-        let timestamp = std::time::SystemTime::now()
-            .duration_since(std::time::UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_secs();
-        let file_name = format!("combined_report_{}.html", timestamp);
-        let report_path = reports_dir.join(&file_name);
-        
-        // 写入文件
-        fs::write(&report_path, html_content)?;
-        
         // 返回生成的报告文件路径
         Ok(report_path.to_string_lossy().to_string())
     }

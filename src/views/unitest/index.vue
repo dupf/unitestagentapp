@@ -4,6 +4,8 @@ import { useRoute } from 'vue-router'
 import { tauri } from '@tauri-apps/api'
 import { NButton, useDialog, useMessage, useNotification } from 'naive-ui'
 import { save } from '@tauri-apps/api/dialog'
+import { appDataDir, join } from '@tauri-apps/api/path'
+import { readDir } from '@tauri-apps/api/fs'
 
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -58,7 +60,7 @@ async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, i
     messages,
     option,
     (detail: string, _: string) => {
-      lastText = lastText + detail ?? ''
+      lastText = lastText + (detail ?? '')
       updateChat(+uuid, index,
         {
           dateTime: new Date().toLocaleString(),
@@ -100,6 +102,8 @@ async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, i
 async function handleSubmit() {
   const message = Object.values(unitestStore.UnitestConfig).join('|')
 
+  // ms.info(String(unitestStore.UnitestConfig.maxIterations))
+
   if (loading.value)
     return
 
@@ -119,7 +123,7 @@ async function handleSubmit() {
   loading.value = true
   prompt.value = ''
   const messages: Chat.RequestMessage[] = await buildRequestMessages(+uuid, dataSources.value.length - 1)
-  // console.log('messages', messages)
+
   addChat(
     +uuid,
     {
@@ -131,7 +135,9 @@ async function handleSubmit() {
     },
   )
   scrollToBottom()
-
+  // alert(messages)
+  // messages[0].content = `${uuid}|${messages[0].content}`
+  // alert(messages[0].content)
   await fetchChatMessage(messages, +uuid, dataSources.value.length - 1)
   scrollToBottom()
   loading.value = false
@@ -163,89 +169,35 @@ async function onRegenerate(index: number) {
   loading.value = false
 }
 
-// function handleExport() {
-//   const d = dialog.warning({
-//     title: t('chat.exportImage'),
-//     content: t('chat.exportImageConfirm'),
-//     positiveText: t('common.yes'),
-//     negativeText: t('common.no'),
-//     onPositiveClick: async () => {
-//       try {
-//         d.loading = true
-//         const ele = document.getElementById('image-wrapper')
-//         const canvas = await html2canvas(ele as HTMLDivElement, {
-//           useCORS: true,
-//         })
-//         const imgData = canvas.toDataURL('image/png')
-//         const binaryData = atob(imgData.split('base64,')[1])
-//         const data = []
-//         for (let i = 0; i < binaryData.length; i++)
-//           data.push(binaryData.charCodeAt(i))
-//         await invoke('download_img', { name: 'ChatGPT-xxxx.jpg', blob: data })
-//         // await invoke('download_report', { name: 'ChatGPT-xxxx.jpg', blob: data })
-//         ms.success(t('chat.exportSuccess'))
-//         Promise.resolve()
-//       }
-//       catch (error: any) {
-//         ms.error(t('chat.exportFailed'))
-//       }
-//       finally {
-//         d.loading = false
-//       }
-//     },
-//   })
-// }
-
-// async function saveexportFile() {
-//   // 模拟要保存的文件内
-//   // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
-//   // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
-//   // 调用保存对话框，用户选择保存路径
-//   const filePath = await save({
-//     defaultPath: 'resources/saved.docx',
-//   })
-//   if (filePath) {
-//     try {
-//       ms.info('保存文件#####')
-//       // 调用 Rust 后端命令，保存文件
-//       try {
-//         tauri.invoke('convert_html_to_word', {
-//           // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
-//           srcpath: 'resources/test_results.html',
-//           destpath: filePath,
-
-//         })
-//       }
-//       catch (error) {
-//         console.error('调用 Rust 后端命令失败:', error)
-//       }
-//       ms.info(filePath)
-//     }
-//     catch (error) {
-//       console.error('保存文件失败:', error)
-//     }
-//   }
-//   else {
-//     alert('未选择保存路径')
-//   }
-// }
-
 async function saveexportFile() {
   // 模拟要保存的文件内
   // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
   // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
   // 调用保存对话框，用户选择保存路径
   const filePath = await save({
-    defaultPath: '/saved.html',
+    defaultPath: './report.html',
   })
   if (filePath) {
     try {
-      ms.info('保存文件#####')
+      ms.info('保存文件')
       // 调用 Rust 后端命令，保存文件
       try {
+        // 调用Rust函数生成报告，返回相对路径
+        // const relativePath = await invoke('generate_report', {
+        //   results: testResults,
+        // })
+
+        // 获取完整路径
+        const appData = await appDataDir()
+        const reportsDir = await join(appData, 'reports')
+        const files: any[] = await readDir(reportsDir)
+        const latestFile = files.reduce((latest: any, file: any) => {
+          return file.modified > latest.modified ? file : latest
+        }, files[0])
+        const fullPath = latestFile.path
         tauri.invoke('download_report', {
           // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
-          srcpath: 'resources/test_results.html',
+          srcpath: fullPath,
           destpath: filePath,
 
         })
@@ -351,6 +303,45 @@ onUnmounted(() => {
   if (loading.value)
     controller.abort()
 })
+
+async function getLatestFile(dirName = 'reports') {
+  try {
+    // Get the app data directory path
+    const appData = await appDataDir()
+
+    // Join the app data directory with the specified subdirectory
+    const targetDir = await join(appData, dirName)
+
+    // Read all files in the directory
+    const files = await readDir(targetDir)
+
+    if (!files.length)
+      return null // No files found
+
+    // Sort files by modification time (most recent first)
+    const sortedFiles = [...files].sort((a, b) => {
+      return new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime()
+    })
+
+    // Return the most recent file
+    return sortedFiles[0]
+  }
+  catch (error) {
+    console.error('Error getting latest file:', error)
+    return null
+  }
+}
+
+// Usage example
+async function openLatestReport() {
+  const latestFile = await getLatestFile()
+  if (latestFile)
+    console.log('Latest file path:', latestFile.path)
+    // You can now open or process this file
+    // e.g., open(latestFile.path) if using Tauri's open command
+  else
+    console.log('No files found')
+}
 </script>
 
 <template>
@@ -413,16 +404,31 @@ onUnmounted(() => {
               <SvgIcon icon="ri:delete-bin-line" />
             </span>
           </HoverButton>
-          <HoverButton v-if="!isMobile" @click="saveexportFile">
+
+          <!-- <HoverButton v-if="!isMobile" @click="saveexportFile">
             <span class="text-xl text-[#4f555e] dark:text-white">
               <SvgIcon icon="ri:download-2-line" />
             </span>
-          </HoverButton>
-          <HoverButton v-if="!isMobile" @click="toggleUsingContext">
+          </HoverButton> -->
+
+          <NTooltip content="下载检测报告">
+            <NButton type="primary" :disabled="buttonDisabled" @click="saveexportFile">
+              <template #icon>
+                <span class="dark:text-black">
+                  <!-- <SvgIcon icon="ri:send-plane-fill" /> -->
+                  <SvgIcon icon="ri:download-2-line" />
+                </span>
+              </template>
+              检测报告下载
+            </NButton>
+          </NTooltip>
+
+          <!-- <HoverButton v-if="!isMobile" @click="toggleUsingContext">
             <span class="text-xl" :class="{ 'text-[#4b9e5f]': usingContext, 'text-[#a8071a]': !usingContext }">
               <SvgIcon icon="ri:chat-history-line" />
             </span>
-          </HoverButton>
+          </HoverButton> -->
+
           <!-- <NAutoComplete v-model:value="prompt" :options="searchOptions" :render-label="renderOption">
             <template #default="{ handleInput, handleBlur, handleFocus }">
               <NInput
@@ -447,6 +453,7 @@ onUnmounted(() => {
                   <SvgIcon icon="ri:send-plane-fill" />
                 </span>
               </template>
+              生成单元测试
             </NButton>
           </NTooltip>
         </div>

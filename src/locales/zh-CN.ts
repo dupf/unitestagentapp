@@ -121,7 +121,7 @@ export default {
     codecoveragereportPath: '代码覆盖率报告路径',
     testCommand: '测试命令',
     testCommandDir: '测试命令目录',
-    includedFiles: '包含的文件',
+    includedFiles: '需要引入的头文件',
     coverageType: '覆盖率类型',
     reportFilepath: '报告文件路径',
     desiredCoverage: '期望覆盖率',

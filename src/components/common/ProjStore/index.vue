@@ -1,17 +1,57 @@
 <script setup lang='ts'>
-import { computed, ref } from 'vue'
+import { computed, defineProps, onMounted, ref } from 'vue'
 import type { FormInst, FormItemRule, FormRules } from 'naive-ui'
-import { NButton, NForm, NFormItem, NInput, useMessage } from 'naive-ui'
+import { NButton, NForm, NFormItem, NInput, NSelect, useMessage } from 'naive-ui'
+import { dialog, window as tauriWindow } from '@tauri-apps/api'
 import { useUnitestStore } from '@/store'
 import { t } from '@/locales'
+
+// 定义组件 props
+const props = defineProps({
+  onClose: { type: Function, required: false },
+})
 
 const UnitestStore = useUnitestStore()
 const ms = useMessage()
 const formRef = ref<FormInst | null>(null)
 
+// 获取当前窗口参数，检查是否是编辑模式
+const isEditMode = ref(false)
+const editProjectId = ref<string | null>(null)
+
+onMounted(async () => {
+  try {
+    // 获取窗口参数，检查是否有projectId参数
+    const label = await tauriWindow.getCurrent().label
+    if (label.includes('edit')) {
+      isEditMode.value = true
+      // 从label中提取projectId
+      const match = label.match(/edit-(.*)/)
+      if (match && match[1]) {
+        editProjectId.value = match[1]
+        // 加载项目配置
+        loadProjectConfig(match[1])
+      }
+    }
+  }
+  catch (error) {
+    console.error('Failed to get window params:', error)
+  }
+})
+
+// 加载项目配置
+function loadProjectConfig(projectId: string) {
+  // 这里应该从UnitestStore中获取指定ID的项目配置
+  // 目前简化处理，直接使用当前配置
+  // 实际实现时，应该根据projectId获取对应的配置
+}
+
 const UnitestConfig = computed(() => UnitestStore.UnitestConfig)
 
 const unitestModel = ref({
+  name: UnitestConfig.value.name,
+  scanMode: UnitestConfig.value.scanMode,
+
   sourcefilePath: UnitestConfig.value.sourcefilePath,
   testfilePath: UnitestConfig.value.testfilePath,
   testfileOutputPath: UnitestConfig.value.testfileOutputPath,
@@ -28,8 +68,43 @@ const unitestModel = ref({
   isRemote: UnitestConfig.value.isRemote ? 'true' : 'false',
 })
 
+async function handleSelectSourceDirectory() {
+  const selected = await dialog.open({
+    directory: false,
+    multiple: false,
+    title: t('unitestModel.selectSourceFile'),
+    filters: [{
+      name: 'Source files',
+      extensions: ['c', 'cpp', 'py', 'rs', 'java', 'go', 'js', 'ts'],
+    }],
+  })
+  if (typeof selected === 'string') {
+    if (unitestModel?.value)
+      unitestModel.value.sourcefilePath = selected
+  }
+}
 const rules: FormRules = {
   name: [
+    {
+      required: true,
+      message: t('setting.namePlaceholder'),
+      validator(rule: FormItemRule, value: string) {
+        if (!value)
+          return new Error(t('setting.nameNotEmptyError'))
+
+        return true
+      },
+      trigger: ['input', 'blur'],
+    },
+  ],
+  scanMode: [
+    {
+      required: true,
+      message: t('unitestModel.scanModeRequired'),
+      trigger: ['change'],
+    },
+  ],
+  sourcefilePath: [
     {
       required: true,
       message: t('setting.namePlaceholder'),
@@ -89,6 +164,8 @@ const rules: FormRules = {
 function saveUnitestInfo() {
   formRef.value?.validate((errors) => {
     if (!errors) {
+      UnitestStore.UnitestConfig.name = unitestModel.value.name
+      UnitestStore.UnitestConfig.scanMode = unitestModel.value.scanMode
       UnitestStore.UnitestConfig.sourcefilePath = unitestModel.value.sourcefilePath
       UnitestStore.UnitestConfig.testfilePath = unitestModel.value.testfilePath
       UnitestStore.UnitestConfig.testfileOutputPath = unitestModel.value.testfileOutputPath
@@ -106,32 +183,55 @@ function saveUnitestInfo() {
       UnitestStore.recordState()
 
       ms.success(t('common.success'))
+
+      // 保存成功后退出
+      setTimeout(() => {
+        // 如果是在弹窗中，则关闭弹窗
+        if (props.onClose) {
+          props.onClose()
+        }
+        else {
+          // 否则关闭窗口或返回上一页
+          try {
+            // 尝试关闭当前 Tauri 窗口
+            tauriWindow.getCurrent().close()
+          }
+          catch (error) {
+            // 如果不是 Tauri 窗口或出错，尝试返回上一页
+            if (window.history && window.history.length > 1)
+              window.history.back()
+          }
+        }
+      }, 500) // 短暂延迟以确保用户看到成功消息
     }
   })
-
-  // formRef.value?.validate((errors) => {
-  //   if (!errors) {
-  //     // const hostUrl = new URL(model.value.host)
-  //     // userInfo.value.name = model.value.name
-  //     // userInfo.value.avatar = model.value.avatar
-  //     // userConfig.value.apiKey = model.value.apiKey
-  //     // userConfig.value.modelName = model.value.modelName
-  //     // userConfig.value.proxy = model.value.proxy
-  //     // userConfig.value.host = `${hostUrl.protocol}//${hostUrl.host}`
-
-  //     UnitestStore.recordState()
-
-  //     ms.success(t('common.success'))
-  //   }
-  // })
 }
 </script>
 
 <template>
   <div class="p-4 space-y-5 min-h-[200px] max-h-[400px] overflow-auto">
     <NForm ref="formRef" :model="unitestModel" :rules="rules">
+      <div class="flex justify-between items-center mb-4">
+        <h2 v-show="false" class="text-lg font-medium">
+          {{ $t('unitestModel.name') }}
+        </h2>
+        <NButton type="primary" @click="saveUnitestInfo">
+          {{ $t('common.save') }}
+        </NButton>
+      </div>
+      <NFormItem v-show="false" path="scanMode" :label="$t('unitestModel.scanMode')">
+        <NSelect
+          v-model:value="unitestModel.scanMode"
+          :options="[
+            { label: $t('unitestModel.projectScan'), value: '0' },
+            { label: $t('unitestModel.fileScan'), value: '1' },
+          ]"
+        />
+      </NFormItem>
       <NFormItem path="sourcefilePath" :label="$t('unitestModel.sourcefilePath')">
-        <NInput v-model:value="unitestModel.sourcefilePath" :placeholder="$t('unitestModel.sourcefilePath')" />
+        <NButton @click="handleSelectSourceDirectory">
+          {{ unitestModel.sourcefilePath || $t('unitestModel.selectFile') }}
+        </NButton>
       </NFormItem>
 
       <NFormItem path="testfilePath" :label="$t('unitestModel.testfilePath')">
@@ -149,7 +249,11 @@ function saveUnitestInfo() {
       <NFormItem path="testCommand" :label="$t('unitestModel.testCommand')">
         <NInput v-model:value="unitestModel.testCommand" :placeholder="$t('unitestModel.testCommand')" />
       </NFormItem>
-      <NFormItem path="testCommandDir" :label="$t('unitestModel.testCommandDir')">
+      <NFormItem
+        v-show="unitestModel.scanMode === '0'"
+        path="testCommandDir"
+        :label="$t('unitestModel.testCommandDir')"
+      >
         <NInput v-model:value="unitestModel.testCommandDir" :placeholder="$t('unitestModel.testCommandDir')" />
       </NFormItem>
       <NFormItem path="includedFiles" :label="$t('unitestModel.includedFiles')">
@@ -161,12 +265,12 @@ function saveUnitestInfo() {
       <NFormItem path="reportFilepath" :label="$t('unitestModel.reportFilepath')">
         <NInput v-model:value="unitestModel.reportFilepath" :placeholder="$t('unitestModel.reportFilepath')" />
       </NFormItem>
-      <!-- <NFormItem path="desiredCoverage" :label="$t('unitestModel.desiredCoverage')">
+      <NFormItem path="desiredCoverage" :label="$t('unitestModel.desiredCoverage')">
         <NInput v-model:value="unitestModel.desiredCoverage" :placeholder="$t('unitestModel.desiredCoverage')" />
-      </NFormItem> -->
-      <!-- <NFormItem path="maxIterations" :label="$t('unitestModel.maxIterations')">
+      </NFormItem>
+      <NFormItem path="maxIterations" :label="$t('unitestModel.maxIterations')">
         <NInput v-model:value="unitestModel.maxIterations" :placeholder="$t('unitestModel.maxIterations')" />
-      </NFormItem> -->
+      </NFormItem>
       <NFormItem path="additionalInstructions" :label="$t('unitestModel.additionalInstructions')">
         <NInput
           v-model:value="unitestModel.additionalInstructions"
@@ -174,7 +278,13 @@ function saveUnitestInfo() {
         />
       </NFormItem>
       <NFormItem path="model" :label="$t('unitestModel.model')">
-        <NInput v-model:value="unitestModel.model" :placeholder="$t('unitestModel.model')" />
+        <NSelect
+          v-model:value="unitestModel.model"
+          :options="UnitestStore.allModels().map(v => ({
+            label: v,
+            value: v,
+          }))"
+        />
       </NFormItem>
       <!-- <NFormItem path="model" :label="$t('unitestModel.model')">
         <NInput v-model:value="unitestModel.isRemote" :placeholder="$t('unitestModel.isRemote')" />

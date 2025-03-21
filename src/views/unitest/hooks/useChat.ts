@@ -16,6 +16,7 @@ export function useChat() {
   }
 
   const addUnitest = (uuid: number, chat: Chat.Chat) => {
+    // console.log('addUnitest', uuid, chat)
     chatStore.addUnitestByUuid(uuid, chat)
   }
 

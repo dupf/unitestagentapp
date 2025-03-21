@@ -9,11 +9,8 @@ use std::path::PathBuf;
 use tauri::{AppHandle, Manager};
 
 use crate::app::uagent::{
-    prompt_builder::PromptBuilder,
-    file_preprocessor::FilePreprocessor,
-    ai_caller::AICaller,
+    ai_caller::AICaller, file_preprocessor::FilePreprocessor, prompt_builder::PromptBuilder,
 };
-
 
 pub struct UnitTestAgentTestGenerator {
     source_file_path: PathBuf,
@@ -38,17 +35,23 @@ pub struct UnitTestAgentTestGenerator {
     total_output_token_count: i32,
     current_coverage: f64,
     prompt: String,
-    prompt_builder: PromptBuilder
-   
+    prompt_builder: PromptBuilder,
 }
 
+// #[derive(Debug, serde::Deserialize)]
+// pub struct TestYaml {
+//     language: String,
+//     existing_test_function_signature: String,
+//     new_tests: Vec<TestDetails>,
+// }
 
 #[derive(Debug, serde::Deserialize)]
 pub struct TestYaml {
     language: String,
-    existing_test_function_signature: String,
+    total_tests: String,
     new_tests: Vec<TestDetails>,
 }
+
 
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct TestDetails {
@@ -102,6 +105,81 @@ pub struct TestDetailsEn {
     pub conclusion: Option<String>,
 }
 
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct CodeIssue {
+    #[serde(rename = "问题编号")]
+    pub issue_id: Option<String>,
+    #[serde(rename = "类别")]
+    pub category: Option<String>,
+    #[serde(rename = "严重性")]
+    pub severity: Option<String>,
+    #[serde(rename = "描述")]
+    pub description: Option<String>,
+    #[serde(rename = "位置")]
+    pub location: Option<String>,
+    #[serde(rename = "影响")]
+    pub impact: Option<String>,
+    #[serde(rename = "建议")]
+    pub recommendation: Option<String>,
+    #[serde(rename = "最佳实践")]
+    pub best_practice: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct CodeIssueEn {
+    #[serde(rename = "issue_id")]
+    pub issue_id: Option<String>,
+    #[serde(rename = "category")]
+    pub category: Option<String>,
+    #[serde(rename = "severity")]
+    pub severity: Option<String>,
+    #[serde(rename = "description")]
+    pub description: Option<String>,
+    #[serde(rename = "location")]
+    pub location: Option<String>,
+    #[serde(rename = "impact")]
+    pub impact: Option<String>,
+    #[serde(rename = "recommendation")]
+    pub recommendation: Option<String>,
+    #[serde(rename = "best_practice")]
+    pub best_practice: Option<String>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct CodeAnalysisResult {
+    #[serde(rename = "语言")]
+    pub language: String,
+
+    #[serde(rename = "问题总数")]
+    pub total_issues: i32,
+
+    #[serde(rename = "代码规范问题")]
+    pub coding_standard_issues: Vec<CodeIssue>,
+
+    #[serde(rename = "性能问题")]
+    pub performance_issues: Vec<CodeIssue>,
+
+    #[serde(rename = "安全漏洞")]
+    pub security_vulnerabilities: Vec<CodeIssue>,
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct CodeAnalysisResultEn {
+    #[serde(rename = "language")]
+    pub language: String,
+
+    #[serde(rename = "total_issues")]
+    pub total_issues: i32,
+
+    #[serde(rename = "coding_standard_issues")]
+    pub coding_standard_issues: Vec<CodeIssueEn>,
+
+    #[serde(rename = "performance_issues")]
+    pub performance_issues: Vec<CodeIssueEn>,
+
+    #[serde(rename = "security_vulnerabilities")]
+    pub security_vulnerabilities: Vec<CodeIssueEn>,
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Debug, Clone)]
 pub struct ProgressPayload {
@@ -176,9 +254,8 @@ impl UnitTestAgentTestGenerator {
             "included_files",
             &additional_instructions,
             "failed_test_runs",
-            &language
+            &language,
         );
-
 
         let mut generator: UnitTestAgentTestGenerator = Self {
             source_file_path: PathBuf::from(source_file_path),
@@ -201,10 +278,8 @@ impl UnitTestAgentTestGenerator {
             total_output_token_count: 0,
             current_coverage: 0.0,
             prompt: String::new(),
-            prompt_builder: prompt_builder_orign 
+            prompt_builder: prompt_builder_orign,
         };
-
-        
 
         Ok(generator)
     }
@@ -228,7 +303,6 @@ impl UnitTestAgentTestGenerator {
         //     .unwrap_or_else(|| String::from("unknown")))
         // Ok(String::from("C"))
         String::from("C")
-        
     }
 
     fn get_included_files(included_files: Option<Vec<String>>) -> String {
@@ -242,7 +316,10 @@ impl UnitTestAgentTestGenerator {
                         content.push(file_content);
                         file_names.push(file_path);
                     }
-                    Err(e) => eprintln!("included_files not Found && Error reading file {}: {}", file_path, e),
+                    Err(e) => eprintln!(
+                        "included_files not Found && Error reading file {}: {}",
+                        file_path, e
+                    ),
                 }
             }
             if !content.is_empty() {
@@ -265,8 +342,6 @@ impl UnitTestAgentTestGenerator {
         // content
     }
 
-    
-
     async fn call_remoteinfo(
         &mut self,
         handle: AppHandle,
@@ -276,30 +351,16 @@ impl UnitTestAgentTestGenerator {
         // match self.llm_caller.call_remotedeepseek(prompt, 4096).await
         match self
             .llm_caller
-            .call_remotedeepseekstream(&handle,id,  prompt, 4096)
+            .call_remotedeepseekstream(&handle, id, prompt, 40960)
             .await
         {
             Ok(response) => {
-                // println!("==response:== {}", response);
                 // Handle potential UTF-8 encoding issues
                 let cleaned_response = response
                     .chars()
                     .filter(|c| c.is_ascii() || c.is_alphabetic())
                     .collect::<String>();
-                println!("==response:== {}", cleaned_response);
 
-            //    let finish_reason: String = "finish".to_string();
-            //    let role: String = "user".to_string();
-
-            //    let progress: ProgressPayload = ProgressPayload {
-            //             id,
-            //             detail: response.clone(), // 使用实际测试信息而不是固定字符串
-            //             role: role.clone(),
-            //             finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-            //         };
-            //     progress.emit_progress(&handle);
-
-                
                 Ok(cleaned_response)
             }
             Err(e) => {
@@ -308,33 +369,32 @@ impl UnitTestAgentTestGenerator {
             }
         }
     }
-    pub async fn initial_test_suite_analysis(&mut self,handle: AppHandle, id: u64) -> Result<(), Box<dyn std::error::Error>> {
+    pub async fn initial_test_suite_analysis(
+        &mut self,
+        handle: AppHandle,
+        id: u64,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let mut test_headers_indentation: Option<String> = None;
         let allowed_attempts = 3;
         let mut counter_attempts = 0;
-       
 
         while test_headers_indentation.is_none() && counter_attempts < allowed_attempts {
-            
-            
-            let prompt_headers_indentation =
-                self.prompt_builder.build_prompt_custom(
-                    "prompts/analyze_suite_test_headers_indentation.toml",
-                    "analyze_suite_test_headers_indentation",
-                )?;
-            
+            let prompt_headers_indentation = self.prompt_builder.build_prompt_custom(
+                "prompts/analyze_suite_test_headers_indentation.toml",
+                "analyze_suite_test_headers_indentation",
+            )?;
 
             let mut prompt_map: HashMap<String, String> = std::collections::HashMap::new();
             prompt_map.insert("system".to_string(), prompt_headers_indentation.0);
             prompt_map.insert("user".to_string(), prompt_headers_indentation.1);
 
-            let response:String = self.call_remoteinfo(handle.clone(), id, &prompt_map,).await?;
+            let response: String = self
+                .call_remoteinfo(handle.clone(), id, &prompt_map)
+                .await?;
 
 
-            // println!("== get the remote response info is :== {}", response);
-            
             let tests_dict: Result<HashMap<String, i32>, serde_yaml::Error> =
-                match serde_yaml::from_str(&response){
+                match serde_yaml::from_str(&response) {
                     Ok(dict) => Ok(dict),
                     Err(e) => {
                         error!("YAML parsing error: {}. Content: {}", e, response);
@@ -363,22 +423,18 @@ impl UnitTestAgentTestGenerator {
         let tests_after: Option<i32> = None;
         let imports_after: Option<i32> = None;
         while insert_lines.is_none() && counter_attempts < allowed_attempts {
-            let prompt_test_insert_line =
-                self.prompt_builder.build_prompt_custom(
-                    "prompts/analyze_suite_test_insert_line.toml",
-                    "analyze_suite_test_insert_line",
-                )?;
+            let prompt_test_insert_line = self.prompt_builder.build_prompt_custom(
+                "prompts/analyze_suite_test_insert_line.toml",
+                "analyze_suite_test_insert_line",
+            )?;
 
             let mut prompt_map = std::collections::HashMap::new();
             prompt_map.insert("system".to_string(), prompt_test_insert_line.0);
             prompt_map.insert("user".to_string(), prompt_test_insert_line.1);
 
-
-            let response = self.call_remoteinfo(handle.clone(),id,&prompt_map).await?;
-          
-            // self.total_input_token_count += prompt_token_count;
-            // self.total_output_token_count += response_token_count
-            // println!("==response:== {}", response);
+            let response = self
+                .call_remoteinfo(handle.clone(), id, &prompt_map)
+                .await?;
 
             let yaml_content = if let Some(content) = response.split("```yaml").nth(1) {
                 if let Some(yaml) = content.split("```").next() {
@@ -390,9 +446,8 @@ impl UnitTestAgentTestGenerator {
                 &response
             };
 
-
             let tests_dict: Result<HashMap<String, i32>, serde_yaml::Error> =
-               match serde_yaml::from_str(&yaml_content){
+                match serde_yaml::from_str(&yaml_content) {
                     Ok(dict) => Ok(dict),
                     Err(e) => {
                         error!("YAML parsing error: {}. Content: {}", e, yaml_content);
@@ -401,8 +456,6 @@ impl UnitTestAgentTestGenerator {
                 };
 
             let yaml_content2: String = format!("{}", yaml_content);
-
-
 
             let tests_dict: HashMap<String, i32> = tests_dict?;
 
@@ -440,20 +493,56 @@ impl UnitTestAgentTestGenerator {
             prompt_map.insert("system".to_string(), prompt_tests.0);
             prompt_map.insert("user".to_string(), prompt_tests.1);
 
-            self.call_remoteinfo(handle.clone(),id,&prompt_map).await?
+            self.call_remoteinfo(handle.clone(), id, &prompt_map)
+                .await?
+        };
+        // println!("response==========: {:?}", response);
+        let yaml_content = if let Some(content) = response.split("```yaml").nth(1) {
+            if let Some(yaml) = content.split("```").next() {
+                yaml.trim()
+            } else {
+                &response
+            }
+        } else {
+            &response
+        };
+        // Parse YAML response into TestDetails
+        let yaml_content2: String = format!("{}", yaml_content);
+        // println!("yaml_content2==========: {:?}", yaml_content2);
+        let yaml_struct: TestYaml = match serde_yaml::from_str(&yaml_content2) {
+            Ok(tests) => tests,
+            Err(e) => TestYaml {
+                language: "".to_string(),
+                total_tests: "".to_string(),
+                new_tests: vec![],
+            },
+        };
+        Ok(yaml_struct.new_tests)
+    }
+
+    pub async fn generate_static_sec(
+        &mut self,
+        handle: AppHandle,
+        id: u64,
+        max_tokens: usize,
+        dry_run: bool,
+    ) -> Result<CodeAnalysisResult, Box<dyn std::error::Error>> {
+        // self.prompt = self.build_prompt()?;
+        let response = if dry_run {
+            String::from("```def test_something():\n    pass```\n```def test_something_else():\n    pass```\n```def test_something_different():\n    pass```")
+        } else {
+            let prompt_tests = self.prompt_builder.build_prompt_custom(
+                "prompts/static_code_analysis_cn.toml",
+                "static_code_analysis_prompt_cn",
+            )?;
+            let mut prompt_map = std::collections::HashMap::new();
+            prompt_map.insert("system".to_string(), prompt_tests.0);
+            prompt_map.insert("user".to_string(), prompt_tests.1);
+
+            self.call_remoteinfo(handle.clone(), id, &prompt_map)
+                .await?
         };
 
-        // let finish_reason: String = "finish".to_string();
-        // let role: String = "user".to_string();
-
-        // let progress: ProgressPayload = ProgressPayload {
-        //                 id,
-        //                 detail: response.clone(), // 使用实际测试信息而不是固定字符串
-        //                 role: role.clone(),
-        //                 finish_reason: finish_reason.clone(), // Clone finish_reason to avoid moving it
-        //             };
-        // progress.emit_progress(&handle);
-        // Extract YAML content from between ```yaml and ``` markers
         let yaml_content = if let Some(content) = response.split("```yaml").nth(1) {
             if let Some(yaml) = content.split("```").next() {
                 yaml.trim()
@@ -466,18 +555,18 @@ impl UnitTestAgentTestGenerator {
         // Parse YAML response into TestDetails
         let yaml_content2: String = format!("{}", yaml_content);
 
-        let yaml_struct: TestYaml = match serde_yaml::from_str(&yaml_content2) {
-            Ok(tests) => {
-                tests
-            }
-            Err(e) => {
-                TestYaml {
-                    language: "".to_string(),
-                    existing_test_function_signature: "".to_string(),
-                    new_tests: vec![],
-                }
+
+        let code_analysis_result: CodeAnalysisResult = match serde_yaml::from_str(&yaml_content2) {
+            Ok(tests) => tests,
+            Err(e) => CodeAnalysisResult {
+                language: "".to_string(),
+                total_issues: 0,
+                coding_standard_issues: vec![],
+                performance_issues: vec![],
+                security_vulnerabilities: vec![],
             }
         };
-        Ok(yaml_struct.new_tests)
+
+        Ok(code_analysis_result)
     }
 }

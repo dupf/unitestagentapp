@@ -8,3 +8,4 @@ pub mod unitest_agent_test_generator;
 pub mod unitest_agent;
 pub mod custom_logger;
 pub mod unitest;
+pub mod code_analysis;

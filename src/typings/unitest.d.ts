@@ -24,7 +24,6 @@ declare namespace Unitest {
 		error?: boolean
 		loading?: boolean
 	}
-	
 
 	interface History {
 		title: string

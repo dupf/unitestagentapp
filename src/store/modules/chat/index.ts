@@ -136,7 +136,7 @@ export const useChatStore = defineStore('chat-store', {
         else {
           this.chat[0].data = [chat]
           // this.chat.push({ uuid, data: [chat], opt: {} })
-          if (this.history[0].title === 'New Unitest')
+          if (this.history[0].title === '新建单元测试')
             this.history[0].title = chat.text
           this.recordState()
         }

@@ -8,21 +8,16 @@ use serde_json::{json, Value};
 use std::process::{Command, Stdio};
 use std::{env::consts::OS, time::Duration};
 use tauri::{AppHandle, Manager};
-// use tokio_util::io::StreamReader;
-use tokio::io::AsyncBufReadExt;
-use tauri::api::path::resource_dir;
-use std::path::PathBuf;
 use std::io::{BufRead, BufReader};
+use std::path::PathBuf;
+use tauri::api::path::resource_dir;
+use tokio::io::AsyncBufReadExt;
 
 use tauri::Env;
 use tauri::PackageInfo;
 type Result<T> = std::result::Result<T, Error>;
 
-
 use crate::app::uagent::unitest_agent::UnitestAgent;
-
-
-
 
 #[derive(Debug, thiserror::Error)]
 pub enum Error {
@@ -80,11 +75,8 @@ pub struct FetchOption {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 #[allow(non_snake_case)]
 pub struct FetchUnitestOption {
-
     pub model: Option<String>,
-
 }
-
 
 #[tauri::command]
 pub async fn fetch_unitest(
@@ -93,7 +85,6 @@ pub async fn fetch_unitest(
     messages: Vec<Message>,
     option: FetchUnitestOption,
 ) -> Result<u64> {
-    
     log::info!(
         "> send message: {:#?}, length: {}, option: {:?},",
         messages,
@@ -106,8 +97,10 @@ pub async fn fetch_unitest(
         .map(|message| message.content.clone())
         .collect();
 
-    log::info!("User contents: {:?}", user_contents);
+    // log::info!("User contents: {:?}", user_contents);
     // Parse user_contents
+    
+    // 修改后的代码 - 去掉前两个字段
     let parsed_contents: Vec<String> = user_contents
         .iter()
         .flat_map(|content: &String| {
@@ -115,10 +108,14 @@ pub async fn fetch_unitest(
                 .split('|')
                 .map(String::from)
                 .collect::<Vec<String>>()
-        }).collect();
+                .into_iter()
+                .skip(2) // 跳过前两个字段
+                .collect::<Vec<String>>()
+        })
+        .collect();
 
     log::info!("> receive message: {}", id);
-    
+
     let package_info: PackageInfo = handle.package_info().clone();
     let env_info: Env = handle.env().clone();
 
@@ -129,16 +126,12 @@ pub async fn fetch_unitest(
     let unitest_agent_path: PathBuf;
     let finish_reason: String = "finish".to_string();
 
-
-    // let api_base: String = "https://ark.cn-beijing.volces.com/api/v3/chat/completions".to_string();
-    let api_base: String = "https://api.siliconflow.cn/v1/chat/completions".to_string();
-    // "https://api.deepseek.com/v1".to_string();
-    // "https://api.deepseek.com/v1".to_string();
+    let api_base: String = "".to_string();
 
     let strict_coverage: bool = false;
     let run_tests_multiple_times: i32 = 1;
     let use_report_coverage_feature_flag: bool = false;
-    
+
     let mut agent_unitest = UnitestAgent::new(
         parsed_contents[0].clone(),
         parsed_contents[1].clone(),
@@ -157,10 +150,9 @@ pub async fn fetch_unitest(
         api_base,
         strict_coverage,
         run_tests_multiple_times,
-        use_report_coverage_feature_flag
+        use_report_coverage_feature_flag,
     );
-    agent_unitest.run(handle,id).await;
-
+    agent_unitest.run(handle, id).await;
 
     Ok(id)
 }

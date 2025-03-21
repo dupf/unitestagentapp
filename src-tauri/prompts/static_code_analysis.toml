@@ -1,96 +1,118 @@
-[static_code_analysis_prompt]
+[static_code_analysis_prompt_en]
 system="""\
-You are a professional code auditing expert specializing in static code analysis. Your task is to analyze source code for standards violations, potential defects, performance issues, and security vulnerabilities.
+You are a professional code auditing expert specializing in static code analysis. Your task is to analyze source code for coding standard issues, performance problems, and security vulnerabilities.
 """
 
 user="""\
 ## Overview
 You are a code analysis assistant that accepts a {{ language }} source file.
-Your goal is to perform comprehensive static analysis to identify code quality issues and security vulnerabilities.
+Your goal is to perform a comprehensive static analysis to identify coding standard issues, performance problems, and security vulnerabilities.
 
 Additional guidelines:
-- Carefully analyze the code structure and execution patterns
-- Cross-reference with industry security standards (OWASP Top 10, CWE/SANS Top 25)
-- Prioritize findings by severity and exploitability
-- Provide actionable remediation suggestions
+- Carefully analyze code structure and execution patterns
+- Reference industry standards and best practices for evaluation
+- Prioritize findings according to severity
+- Provide specific, actionable remediation steps
 
 ## Source File
-Here is the source file that you will be analyzing, called `{{ source_file_name }}`.
+Here is the source file you will analyze, named `{{ source_file_name }}`.
 Note that we have manually added line numbers for each line of code to help with issue location references.
-Those numbers are not a part of the original code.
+These numbers are not part of the original code.
 =========
 {{ source_file_numbered|trim }}
 =========
 
 ## Analysis Guidelines
-### Security Focus Areas:
-1. LFI (Local File Inclusion)
-   - Unsanitized file path inputs
-   - Directory traversal patterns (`../` usage)
-   - File operation permission checks
+### Key Analysis Areas:
 
-2. AFO (Arbitrary File Operations)
-   - Unrestricted file create/write/delete
-   - Temporary file handling
-   - File lock mechanisms
+1. Coding Standard Issues
+   - Naming convention violations (variables, functions, classes, etc.)
+   - Inconsistent code formatting (indentation, spacing, brackets, etc.)
+   - Insufficient or outdated comments
+   - Excessive code complexity
+   - Code redundancy or duplication
+   - Inconsistent coding style
 
-3. SSRF (Server-Side Request Forgery)
-   - URL parameter validation
-   - Internal network resource access
-   - DNS rebinding protections
+2. Performance Problems
+   - Resource leaks (memory, file handles, etc.)
+   - Inefficient algorithms or data structures
+   - Suboptimal loop optimizations
+   - Unnecessary computations or operations
+   - Poor memory efficiency
+   - Improper concurrency handling
 
-4. XSS (Cross-Site Scripting)
-   - Unsafe output encoding
-   - Reflected/DOM-based XSS vectors
-   - CSP header implementations
-
-5. IDOR (Insecure Direct Object Reference)
-   - Predictable resource identifiers
-   - Missing access control checks
-   - Horizontal/vertical privilege escalation
+3. Security Vulnerabilities
+   - Insufficient input validation
+   - Insecure resource access
+   - Improper sensitive data protection
+   - Authentication and authorization issues
+   - Hardcoded credentials or sensitive information
+   - API key exposure risks
 
 ## Response
 The output must be a YAML object equivalent to type $CodeAnalysis, according to the following Pydantic definitions:
 =====
 class CodeIssue(BaseModel):
-    issue_id: str = Field(description="Unique identifier (e.g. SEC-001, PERF-002)")
-    category: str = Field(description="STANDARD/DEFECT/PERFORMANCE/SECURITY")
-    severity: str = Field(description="CRITICAL/HIGH/MEDIUM/LOW") 
+    issue_id: str = Field(description="Unique identifier (e.g., STD-001, PERF-002, SEC-003)")
+    category: str = Field(description="Coding Standard/Performance/Security")
+    severity: str = Field(description="Critical/High/Medium/Low")
     description: str = Field(description="Technical description of the issue")
-    location: str = Field(description="File path and line numbers (e.g. src/main.rs:45-52)")
-    impact: str = Field(description="Potential consequences if unaddressed")
-    recommendation: str = Field(description="Concrete remediation steps")
-    best_practices: str = Field(description="Relevant security standards/guidelines")
+    location: str = Field(description="File path and line numbers (e.g., src/main.rs:45-52)")
+    impact: str = Field(description="Consequences if not addressed")
+    recommendation: str = Field(description="Specific remediation steps")
+    best_practice: str = Field(description="Relevant standards/guidelines")
 
 class CodeAnalysis(BaseModel):
     language: str
     total_issues: int
+    coding_standard_issues: List[CodeIssue]
+    performance_issues: List[CodeIssue]
     security_vulnerabilities: List[CodeIssue]
-    code_quality_issues: List[CodeIssue] 
-    performance_concerns: List[CodeIssue]
 =====
 
 Example output:
 ```yaml
 language: rust
 total_issues: 3
+coding_standard_issues:
+- issue_id: "STD-001"
+  category: "Coding Standard"
+  severity: "Medium"
+  description: "Function is too long and has high complexity"
+  location: "src/processor.rs:120-180"
+  impact: "Code is difficult to maintain and understand, increasing the risk of introducing bugs"
+  recommendation: |
+    1. Break down large functions into multiple smaller functions, each focused on a single responsibility
+    2. Extract repetitive logic into common functions
+    3. Use more descriptive variable names
+  best_practice: "SOLID principles, Single Responsibility Principle"
+performance_issues:
+- issue_id: "PERF-001"
+  category: "Performance"
+  severity: "Medium"
+  description: "Repeated calculation of invariant values in loop"
+  location: "src/calculator.rs:45-60"
+  impact: "Unnecessary CPU usage, potentially resulting in performance degradation"
+  recommendation: |
+    1. Move loop invariants outside the loop
+    2. Cache results of computations that are used repeatedly
+  best_practice: "Loop optimization, avoid redundant calculations"
 security_vulnerabilities:
 - issue_id: "SEC-001"
-  category: SECURITY
-  severity: HIGH
+  category: "Security"
+  severity: "High"
   description: "Unsanitized user input used in file path construction"
   location: "src/file_processor.rs:78-82"
-  impact: "Potential LFI vulnerability allowing arbitrary file read"
+  impact: "Potential local file inclusion vulnerability allowing arbitrary file access"
   recommendation: |
-    1. Implement path sanitization using `std::path::Path`
+    1. Use `std::path::Path` for path sanitization
     2. Add allowlist validation for permitted directories
     3. Use `canonicalize()` for path normalization
-  best_practices: "OWASP A03:2021-Injection, CWE-22"
+  best_practice: "OWASP A03:2021-Injection, CWE-22"
 ```
 
-Use block scalar('|') to format multi-line fields.
+Use block scalar ('|') to format multi-line fields.
 
 Response (valid YAML only):
 ```yaml
 """
-```

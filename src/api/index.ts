@@ -95,17 +95,6 @@ export async function fetchUnitestAPIProcess(
       }
     }
   }
-  // await invoke('fetch_unitest_api', {
-  //   id,
-  //   messages,
-  //   option,
-  // }).catch((error) => {
-  //   handlers.delete(id)
-  //   if (errorHandle) {
-  //     errorHandle(new Error(error))
-  //     errorHandle = undefined
-  //   }
-  // })
 
   await invoke('fetch_unitest', {
     id,

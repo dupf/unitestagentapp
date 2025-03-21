@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代码分析与测试报告</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            color: #333;
+            line-height: 1.6;
+        }
+        h1, h2 {
+            color: #444;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+            margin-top: 20px;
+        }
+        .report-header {
+            background-color: #f8f8f8;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-section {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 20px;
+        }
+        .summary-card {
+            flex: 1;
+            min-width: 250px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .summary-card h3 {
+            margin-top: 0;
+            color: #0066cc;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+        .stat-label {
+            font-weight: normal;
+        }
+        .stat-value {
+            font-weight: bold;
+        }
+        .progress-bar {
+            height: 20px;
+            background-color: #e9ecef;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow: hidden;
+        }
+        .progress-value {
+            height: 100%;
+            background-color: #28a745;
+            border-radius: 10px;
+            text-align: center;
+            color: white;
+            line-height: 20px;
+            font-size: 12px;
+        }
+        .issues-container {
+            margin-top: 20px;
+        }
+        .issue-card {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .issue-header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+        }
+        .issue-title {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+        .severity-high {
+            color: #d9534f;
+        }
+        .severity-medium {
+            color: #f0ad4e;
+        }
+        .severity-low {
+            color: #5bc0de;
+        }
+        .recommendation {
+            background-color: #f9f9f9;
+            padding: 10px;
+            border-left: 3px solid #0066cc;
+            margin-top: 10px;
+        }
+        .test-results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        .test-results-table th, .test-results-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .test-results-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        .test-results-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .status-pass {
+            color: #28a745;
+        }
+        .status-fail {
+            color: #dc3545;
+        }
+        pre {
+            background-color: #f8f8f8;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+        }
+        code {
+            font-family: Consolas, Monaco, 'Andale Mono', monospace;
+            background-color: #f0f0f0;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="report-header">
+        <h1>代码分析与测试报告</h1>
+        <p>分析语言: {{ language }}</p>
+    </div>
+
+    <!-- 静态单元测试成功 -->
+    <h2>静态单元测试成功</h2>
+    <div class="summary-section">
+        <div class="summary-card">
+            <h3>测试统计</h3>
+            <div class="stat-item">
+                <span class="stat-label">测试用例数量:</span>
+                <span class="stat-value">{{ test_case_count }}</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">测试覆盖率:</span>
+                <span class="stat-value">{{ coverage_percentage }}%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-value" style="width: {{ coverage_percentage }}%">{{ coverage_percentage }}%</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 静态代码分析 -->
+    <h2>静态代码分析</h2>
+    <div class="summary-section">
+        <div class="summary-card">
+            <h3>问题统计</h3>
+            <div class="stat-item">
+                <span class="stat-label">代码规范问题:</span>
+                <span class="stat-value">{{ coding_standard_issues | length }}处</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">潜在缺陷:</span>
+                <span class="stat-value">{{ potential_defects | length }}处</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">性能问题:</span>
+                <span class="stat-value">{{ performance_issues | length }}处</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">安全漏洞:</span>
+                <span class="stat-value">{{ security_vulnerabilities | length }}处</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">总计问题:</span>
+                <span class="stat-value">{{ total_issues }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 代码规范问题 -->
+    {% if coding_standard_issues | length > 0 %}
+    <h2>代码规范问题</h2>
+    <div class="issues-container">
+        {% for issue in coding_standard_issues %}
+        <div class="issue-card">
+            <div class="issue-header">
+                <div class="issue-title">{{ issue.issue_id }} - {{ issue.description }}</div>
+                <div class="severity {% if issue.severity == '高' or issue.severity == 'high' %}severity-high{% elif issue.severity == '中' or issue.severity == 'medium' %}severity-medium{% else %}severity-low{% endif %}">
+                    严重性: {{ issue.severity }}
+                </div>
+            </div>
+            <p><strong>位置:</strong> {{ issue.location }}</p>
+            <p><strong>影响:</strong> {{ issue.impact }}</p>
+            <div class="recommendation">
+                <strong>修复建议:</strong><br>
+                {{ issue.recommendation | replace(value="\n", by="<br>") | safe }}
+            </div>
+            <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 潜在缺陷 -->
+    {% if potential_defects | length > 0 %}
+    <h2>潜在缺陷</h2>
+    <div class="issues-container">
+        {% for issue in potential_defects %}
+        <div class="issue-card">
+            <div class="issue-header">
+                <div class="issue-title">{{ issue.issue_id }} - {{ issue.description }}</div>
+                <div class="severity {% if issue.severity == '高' or issue.severity == 'high' %}severity-high{% elif issue.severity == '中' or issue.severity == 'medium' %}severity-medium{% else %}severity-low{% endif %}">
+                    严重性: {{ issue.severity }}
+                </div>
+            </div>
+            <p><strong>位置:</strong> {{ issue.location }}</p>
+            <p><strong>影响:</strong> {{ issue.impact }}</p>
+            <div class="recommendation">
+                <strong>修复建议:</strong><br>
+                {{ issue.recommendation | replace(value="\n", by="<br>") | safe }}
+            </div>
+            <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 性能问题 -->
+    {% if performance_issues | length > 0 %}
+    <h2>性能问题</h2>
+    <div class="issues-container">
+        {% for issue in performance_issues %}
+        <div class="issue-card">
+            <div class="issue-header">
+                <div class="issue-title">{{ issue.issue_id }} - {{ issue.description }}</div>
+                <div class="severity {% if issue.severity == '高' or issue.severity == 'high' %}severity-high{% elif issue.severity == '中' or issue.severity == 'medium' %}severity-medium{% else %}severity-low{% endif %}">
+                    严重性: {{ issue.severity }}
+                </div>
+            </div>
+            <p><strong>位置:</strong> {{ issue.location }}</p>
+            <p><strong>影响:</strong> {{ issue.impact }}</p>
+            <div class="recommendation">
+                <strong>修复建议:</strong><br>
+                {{ issue.recommendation | replace(value="\n", by="<br>") | safe }}
+            </div>
+            <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 安全漏洞 -->
+    {% if security_vulnerabilities | length > 0 %}
+    <h2>安全漏洞</h2>
+    <div class="issues-container">
+        {% for issue in security_vulnerabilities %}
+        <div class="issue-card">
+            <div class="issue-header">
+                <div class="issue-title">{{ issue.issue_id }} - {{ issue.description }}</div>
+                <div class="severity {% if issue.severity == '高' or issue.severity == 'high' %}severity-high{% elif issue.severity == '中' or issue.severity == 'medium' %}severity-medium{% else %}severity-low{% endif %}">
+                    严重性: {{ issue.severity }}
+                </div>
+            </div>
+            <p><strong>位置:</strong> {{ issue.location }}</p>
+            <p><strong>影响:</strong> {{ issue.impact }}</p>
+            <div class="recommendation">
+                <strong>修复建议:</strong><br>
+                {{ issue.recommendation | replace(value="\n", by="<br>") | safe }}
+            </div>
+            <p><strong>最佳实践:</strong> {{ issue.best_practice }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- 测试结果详情 -->
+    {% if test_results | length > 0 %}
+    <h2>测试结果详情</h2>
+    <table class="test-results-table">
+        <tr>
+            <th>测试用例编号</th>
+            <th>测试技术</th>
+            <th>测试用例描述</th>
+            <th>测试代码</th>
+            <th>全局变量</th>
+            <th>初始化代码</th>
+            <th>桩函数</th>
+            <th>输入</th>
+            <th>预期输出</th>
+            <th>实际输出</th>
+            <th>结论</th>
+        </tr>
+        {% for result in test_results %}
+        <tr>
+            <td>{{ result.test_number }}</td>
+            <td>{{ result.test_technique }}</td>
+            <td>{{ result.test_description }}</td>
+            <td><pre><code>{{ result.test_code }}</code></pre></td>
+            <td>{{ result.global_variables }}</td>
+            <td>{{ result.initialization_code }}</td>
+            <td>{{ result.stub_functions }}</td>
+            <td>{{ result.input }}</td>
+            <td>{{ result.expected_output }}</td>
+            <td>{{ result.actual_output }}</td>
+            <td class="{% if result.conclusion == '通过' %}status-pass{% else %}status-fail{% endif %}">{{ result.conclusion }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% endif %}
+</body>
+</html>

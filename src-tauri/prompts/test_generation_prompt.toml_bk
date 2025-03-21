@@ -84,15 +84,14 @@ class SingleTest(BaseModel):
 
 class NewTests(BaseModel):
     language: str = Field(description="The programming language of the source code")
-    total_tests: str = Field(description="total_tests")
-    
+    existing_test_function_signature: str = Field(description="A single line repeating a signature header of one of the existing test functions")
     new_tests: List[SingleTest] = Field(min_items=1, max_items={{ max_tests }}, description="A list of new test functions to append to the existing test suite, aiming to increase the code coverage. Each test should run as-is, without requiring any additional inputs or setup code. Don't introduce new dependencies")
 =====
 
 Example output:
 ```yaml
 language: {{ language }}
-测试用例总数: 1
+existing_test_function_signature: |
   ...
 new_tests:
 - 测试用例编号: |

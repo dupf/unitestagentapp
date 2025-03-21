@@ -26,6 +26,10 @@ function handleAdd_proj(event: Event) {
   const title = input.innerText
   chatStore.addHistory({ title, uuid: Date.now(), isEdit: false })
 
+  // alert('新建项目', uuid)
+
+  // alert(uuid)
+
   tauri.invoke('new_window', {
     title: '项目配置',
     label: 'project_store',
