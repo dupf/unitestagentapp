@@ -100,6 +100,19 @@ pub async fn fetch_unitest(
     // log::info!("User contents: {:?}", user_contents);
     // Parse user_contents
     
+    let unitest_id: Vec<String> = user_contents
+        .iter()
+        .flat_map(|content: &String| {
+            content
+                .split('|')
+                .map(String::from)
+                .collect::<Vec<String>>()
+                .into_iter()
+                .take(1) // Take only the first field
+                .collect::<Vec<String>>()
+        })
+        .collect();
+
     // 修改后的代码 - 去掉前两个字段
     let parsed_contents: Vec<String> = user_contents
         .iter()
@@ -109,12 +122,12 @@ pub async fn fetch_unitest(
                 .map(String::from)
                 .collect::<Vec<String>>()
                 .into_iter()
-                .skip(2) // 跳过前两个字段
+                .skip(3) // 跳过前两个字段
                 .collect::<Vec<String>>()
         })
         .collect();
 
-    log::info!("> receive message: {}", id);
+    log::info!("> receive message: {}{:?}{:?}", id,  unitest_id[0], parsed_contents);
 
     let package_info: PackageInfo = handle.package_info().clone();
     let env_info: Env = handle.env().clone();
@@ -152,7 +165,7 @@ pub async fn fetch_unitest(
         run_tests_multiple_times,
         use_report_coverage_feature_flag,
     );
-    agent_unitest.run(handle, id).await;
+    agent_unitest.run(handle, unitest_id[0].clone(),id).await;
 
     Ok(id)
 }

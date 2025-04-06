@@ -589,14 +589,13 @@ impl ReportGenerator {
     // 添加生成合并报告的函数
     pub async fn generate_combined_report(
         handle: AppHandle,
+        unitest_id: String,
         test_results: &Vec<TestDetails>,
         analysis: &CodeAnalysisResult,
     ) -> Result<String, Box<dyn std::error::Error>> {
 
         let test_results_en: Vec<TestDetailsEn> =
         test_results.iter().map(|detail| detail.to_english()).collect();
-
-
 
         let analysisEn = CodeAnalysisResultEn {
             language: analysis.language.clone(),
@@ -633,7 +632,7 @@ impl ReportGenerator {
             }).collect(),
         };
 
-        let mut tera = Tera::default();
+        let mut tera: Tera = Tera::default();
         if let Err(e) = tera.add_raw_template("report", Self::COMBINED_TEMPLATE) {
             println!("Error adding raw template: {:?}", e);
             return Err(Box::new(e));
@@ -664,7 +663,8 @@ impl ReportGenerator {
             .duration_since(std::time::UNIX_EPOCH)
             .expect("Time went backwards")
             .as_secs();
-        let file_name = format!("combined_report_{}.html", timestamp);
+        let file_name: String = format!("combined_report_{}.html", unitest_id);
+        print!("file_name===={}", file_name);
         let report_path = reports_dir.join(&file_name);
         
         // 写入文件

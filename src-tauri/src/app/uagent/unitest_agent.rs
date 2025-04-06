@@ -129,12 +129,9 @@ impl UnitestAgent {
             self.test_file_output_path = self.test_file_path.clone();
         }
     }
-    pub async fn run(&mut self, handle: AppHandle, id: u64) {
+    pub async fn run(&mut self, handle: AppHandle, unitest_id: String, id: u64) {
         let mut iteration_count = 0;
-        // println!("==self.test_gen:== ======");
-        // self.test_gen
-        //     .initial_test_suite_analysis(handle.clone(), id)
-        //     .await;
+
         let mut test_results_list: Vec<TestDetails> = Vec::new();
 
         let finish_reason: String = "finish".to_string();
@@ -142,8 +139,9 @@ impl UnitestAgent {
 
         while iteration_count < self.max_iterations {
             let generated_tests_result =
-                self.test_gen.generate_tests(handle.clone(), id, 4096, false);
-        
+                self.test_gen
+                    .generate_tests(handle.clone(), id, 4096, false);
+
             let generated_tests_result_vec: Vec<TestDetails> = match generated_tests_result.await {
                 Ok(tests) => tests,
                 Err(e) => {
@@ -156,7 +154,6 @@ impl UnitestAgent {
 
             for generated_test in generated_tests_result_vec.into_iter() {
                 if test_results_list.is_empty() {
-                
                     test_results_list.push(generated_test);
                 } else {
                     let mut found = false;
@@ -228,8 +225,13 @@ impl UnitestAgent {
         //     .await;
 
         // ReportGenerator::generate_static_analysis_report(handle.clone(), &static_sec_result).await;
-        ReportGenerator::generate_combined_report(handle.clone(), &test_results_list, &static_sec_result).await; 
-
-        
+        let report_path = ReportGenerator::generate_combined_report(
+            handle.clone(),
+            unitest_id,
+            &test_results_list,
+  &static_sec_result
+        )
+        .await;
+        println!("report_path===={:?}", report_path);
     }
 }

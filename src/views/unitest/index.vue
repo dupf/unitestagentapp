@@ -100,10 +100,12 @@ async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, i
 }
 
 async function handleSubmit() {
-  const message = Object.values(unitestStore.UnitestConfig).join('|')
+  let message = Object.values(unitestStore.UnitestConfig).join('|')
 
-  // ms.info(String(unitestStore.UnitestConfig.maxIterations))
+  message = `${+uuid}|${message}`
 
+  // alert(message)
+  // 如果正在生成，则不进行生成
   if (loading.value)
     return
 
@@ -170,9 +172,6 @@ async function onRegenerate(index: number) {
 }
 
 async function saveexportFile() {
-  // 模拟要保存的文件内
-  // const content = '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html'
-  // '/Users/mac/Documents/work/htzr/unitesttools/unitestool/unitest_agent/test_results.html'
   // 调用保存对话框，用户选择保存路径
   const filePath = await save({
     defaultPath: './report.html',
@@ -182,24 +181,19 @@ async function saveexportFile() {
       ms.info('保存文件')
       // 调用 Rust 后端命令，保存文件
       try {
-        // 调用Rust函数生成报告，返回相对路径
-        // const relativePath = await invoke('generate_report', {
-        //   results: testResults,
-        // })
-
         // 获取完整路径
         const appData = await appDataDir()
+        ms.info(+uuid)
         const reportsDir = await join(appData, 'reports')
-        const files: any[] = await readDir(reportsDir)
-        const latestFile = files.reduce((latest: any, file: any) => {
-          return file.modified > latest.modified ? file : latest
-        }, files[0])
-        const fullPath = latestFile.path
+        const fullPath = await join(reportsDir, `combined_report_${+uuid}.html`)
+        // const files: any[] = await readDir(reportsDir)
+        // const latestFile = files.reduce((latest: any, file: any) => {
+        //   return file.modified > latest.modified ? file : latest
+        // }, files[0])
+        // const fullPath = latestFile.path
         tauri.invoke('download_report', {
-          // srcpath: '/Users/mac/Documents/work/htzr/unitest_agent/uapp/unitestagentapp/src-tauri/test_results.html',
           srcpath: fullPath,
           destpath: filePath,
-
         })
       }
       catch (error) {
@@ -453,7 +447,7 @@ async function openLatestReport() {
                   <SvgIcon icon="ri:send-plane-fill" />
                 </span>
               </template>
-              生成单元测试
+              执行用例
             </NButton>
           </NTooltip>
         </div>
