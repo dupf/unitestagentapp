@@ -38,12 +38,12 @@ jobs:
           echo "Generating binary file..."
           # Example: cp path/to/generated/binary ./output/binary-file
           
-      - name: Upload binary
-        uses: actions/upload-artifact@v3
-        with:
-          name: binary-file
-          path: ./output/unitestagent_bin # Adjust the path to your generated binary
+      # - name: Upload binary
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: binary-file
+      #     path: ./output/unitestagent_bin # Adjust the path to your generated binary
 
-      - name: Share download link
-        run: |
-          echo "Artifact uploaded, download it from the Actions tab."
+      # - name: Share download link
+      #   run: |
+      #     echo "Artifact uploaded, download it from the Actions tab."

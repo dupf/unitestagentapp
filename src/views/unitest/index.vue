@@ -183,7 +183,7 @@ async function saveexportFile() {
       try {
         // 获取完整路径
         const appData = await appDataDir()
-        ms.info(+uuid)
+        // ms.info(+uuid)
         const reportsDir = await join(appData, 'reports')
         const fullPath = await join(reportsDir, `combined_report_${+uuid}.html`)
         // const files: any[] = await readDir(reportsDir)
