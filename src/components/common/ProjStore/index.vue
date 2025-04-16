@@ -266,10 +266,18 @@ function saveUnitestInfo() {
         <NInput v-model:value="unitestModel.reportFilepath" :placeholder="$t('unitestModel.reportFilepath')" />
       </NFormItem>
       <NFormItem path="desiredCoverage" :label="$t('unitestModel.desiredCoverage')">
-        <NInput v-model:value="unitestModel.desiredCoverage" :placeholder="$t('unitestModel.desiredCoverage')" />
+        <NInput
+          :value="unitestModel.desiredCoverage?.toString() || ''"
+          :placeholder="$t('unitestModel.desiredCoverage')"
+          @update:value="val => unitestModel.desiredCoverage = val ? Number(val) : 0"
+        />
       </NFormItem>
       <NFormItem path="maxIterations" :label="$t('unitestModel.maxIterations')">
-        <NInput v-model:value="unitestModel.maxIterations" :placeholder="$t('unitestModel.maxIterations')" />
+        <NInput
+          :value="unitestModel.maxIterations?.toString() || ''"
+          :placeholder="$t('unitestModel.maxIterations')"
+          @update:value="val => unitestModel.maxIterations = val ? Number(val) : 0"
+        />
       </NFormItem>
       <NFormItem path="additionalInstructions" :label="$t('unitestModel.additionalInstructions')">
         <NInput

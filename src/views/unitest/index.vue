@@ -5,7 +5,7 @@ import { tauri } from '@tauri-apps/api'
 import { NButton, useDialog, useMessage, useNotification } from 'naive-ui'
 import { save } from '@tauri-apps/api/dialog'
 import { appDataDir, join } from '@tauri-apps/api/path'
-import { readDir } from '@tauri-apps/api/fs'
+import { readDir, stat } from '@tauri-apps/api/fs'
 
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -18,7 +18,6 @@ import { useBasicLayout } from '@/hooks/useBasicLayout'
 import { ChatRule, useChatStore, useUnitestStore } from '@/store'
 import { fetchUnitestAPIProcess } from '@/api'
 import { t } from '@/locales'
-
 const notification = useNotification()
 let controller = new AbortController()
 
@@ -312,12 +311,13 @@ async function getLatestFile(dirName = 'reports') {
     if (!files.length)
       return null // No files found
 
-    // Sort files by modification time (most recent first)
-    const sortedFiles = [...files].sort((a, b) => {
-      return new Date(b.modifiedAt).getTime() - new Date(a.modifiedAt).getTime()
-    })
+    const sortedFiles = (await Promise.all(
+      files.map(async (file) => {
+        const fileStats = await stat(file.path)
+        return { ...file, modifiedAt: fileStats.modified }
+      }),
+    )).sort((a, b) => b.modifiedAt.getTime() - a.modifiedAt.getTime())
 
-    // Return the most recent file
     return sortedFiles[0]
   }
   catch (error) {
@@ -330,11 +330,13 @@ async function getLatestFile(dirName = 'reports') {
 async function openLatestReport() {
   const latestFile = await getLatestFile()
   if (latestFile)
-    console.log('Latest file path:', latestFile.path)
+    // console.log('Latest file path:', latestFile.path)
+    ms.info(`Latest file path:${latestFile.path}`)
     // You can now open or process this file
     // e.g., open(latestFile.path) if using Tauri's open command
   else
-    console.log('No files found')
+    // console.log('No files found')
+    ms.info('No files found')
 }
 </script>
 

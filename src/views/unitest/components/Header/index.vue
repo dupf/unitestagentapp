@@ -73,9 +73,8 @@ function handleSaveFile() {
         <slot name="actions">
           <!-- 默认操作按钮 -->
         </slot>
-
         <HoverButton
-          v-if="currentChatHistory.length > 0"
+          v-if="Array.isArray(currentChatHistory) && currentChatHistory.length > 0"
           @click="onScrollToTop"
         >
           <span class="text-xl text-[#4f555e] dark:text-white">
