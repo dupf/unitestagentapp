@@ -1,0 +1,89 @@
+[test_repair_prompt]
+system="""\
+You are an expert test engineer specializing in debugging and fixing unit tests. \
+Your task is to analyze compilation errors or runtime failures in generated test code \
+and produce corrected test code that resolves all issues while preserving test intent.
+"""
+
+user="""\
+## Overview
+The following unit test code was generated to test a {{ language }} source file, but it failed during compilation or execution.
+Your task is to fix the test code so that it compiles and runs successfully, while preserving the original test intent.
+
+## Source File
+Here is the source file being tested, called `{{ source_file_name }}`:
+=========
+{{ source_file_numbered|trim }}
+=========
+
+## Existing Test File
+Here is the existing test file, called `{{ test_file_name }}`:
+=========
+{{ test_file|trim }}
+=========
+
+{%- if additional_includes_section|trim %}
+
+{{ additional_includes_section|trim }}
+{% endif %}
+
+## Failed Test Code
+The following generated test code failed:
+=========
+{{ failed_test_code|trim }}
+=========
+
+## Error Output
+The compilation/runtime error output:
+=========
+{{ error_output|trim }}
+=========
+
+## Instructions
+1. Carefully analyze the error output to understand the root cause of the failure
+2. Fix the test code to resolve ALL errors while keeping the original test intent
+3. Ensure the fixed code:
+   - Compiles successfully
+   - Uses correct imports and dependencies
+   - Follows the existing test file's style and conventions
+   - Tests the same behavior as the original intent
+   - Handles edge cases properly
+4. If a test is fundamentally impossible to fix (e.g., testing non-existent API), explain why and provide an alternative
+
+## Response
+The output must be a YAML object:
+```yaml
+language: {{ language }}
+repair_status: "fixed"  # or "unfixable"
+repair_notes: |
+  Brief explanation of what was fixed
+repaired_tests:
+- 测试用例编号: |
+    ...
+  测试技术: |
+    ...
+  测试用例描述: |
+    ...
+  测试代码: |
+    ...fixed test code...
+  全局变量: |
+    ""
+  初始化代码: |
+    ""
+  桩函数: |
+    ""
+  输入: |
+    ""
+  预期输出: |
+    ""
+  实际输出: |
+    ""
+  结论: |
+    PENDING
+```
+
+Use block scalar('|') to format each YAML output.
+
+Response (should be a valid YAML, and nothing else):
+```yaml
+"""

@@ -5,7 +5,6 @@ import { tauri } from '@tauri-apps/api'
 import { NButton, useDialog, useMessage, useNotification } from 'naive-ui'
 import { save } from '@tauri-apps/api/dialog'
 import { appDataDir, join } from '@tauri-apps/api/path'
-import { readDir, stat } from '@tauri-apps/api/fs'
 
 import { Message } from './components'
 import { useScroll } from './hooks/useScroll'
@@ -35,11 +34,11 @@ const { scrollRef, scrollToBottom } = useScroll()
 const { usingContext, toggleUsingContext } = useUsingContext()
 const { uuid } = route.params as { uuid: string }
 const dataSources = computed(() => chatStore.getChatDataByUuid(+uuid))
-const prompt = ref<string>('')
-const loading = ref<boolean>(false)
 
 // 添加单测试
 const unitestStore = useUnitestStore()
+const testLoading = ref<boolean>(false)
+const scanLoading = ref<boolean>(false)
 
 // const unitest = ref<string>('')
 
@@ -48,111 +47,267 @@ const unitestStore = useUnitestStore()
 // 使用storeToRefs，保证store修改后，联想部分能够重新渲染
 // const { promptList: promptTemplate } = storeToRefs<any>(promptStore)
 
-async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, index: number) {
+async function fetchChatMessage(messages: Chat.RequestMessage[], uuid: number, index: number, actionType: 'test' | 'scan' = 'test') {
   const option = getSessionConfig(uuid)
 
   controller = new AbortController()
 
   let lastText = ''
 
-  await fetchUnitestAPIProcess(
-    messages,
-    option,
-    (detail: string, _: string) => {
-      lastText = lastText + (detail ?? '')
-      updateChat(+uuid, index,
-        {
-          dateTime: new Date().toLocaleString(),
-          text: lastText,
-          rule: ChatRule.Assistant,
-          error: false,
-          loading: false,
-        },
-      )
-      scrollToBottom()
-    },
-    (error: Error) => {
-      const errorMessage = error?.message ?? t('common.wrong')
-      if (errorMessage === 'canceled') {
-        updateChatSome(+uuid, index,
-          {
-            loading: false,
-          },
-        )
-      }
-      else {
-        notification.error({
-          content: errorMessage,
-        })
+  // 添加超时处理
+  const timeoutId = setTimeout(() => {
+    console.log('请求超时，终止请求')
+    controller.abort()
+  }, 30000) // 30秒超时
+
+  try {
+    await fetchUnitestAPIProcess(
+      messages,
+      option,
+      (detail: string, _: string) => {
+        lastText = lastText + (detail ?? '')
         updateChat(+uuid, index,
           {
             dateTime: new Date().toLocaleString(),
-            text: t('common.wrong'),
+            text: lastText,
             rule: ChatRule.Assistant,
-            error: true,
+            error: false,
             loading: false,
           },
         )
-      }
-    },
-    controller.signal)
+        scrollToBottom()
+      },
+      (error: Error) => {
+        clearTimeout(timeoutId)
+        const errorMessage = error?.message ?? t('common.wrong')
+        console.error('API调用错误:', errorMessage, error)
+
+        if (errorMessage === 'canceled') {
+          updateChatSome(+uuid, index,
+            {
+              loading: false,
+            },
+          )
+        }
+        else {
+          // 检查是否是后端崩溃
+          const isBackendCrash = errorMessage.includes('panicked')
+                               || errorMessage.includes('index out of bounds')
+                               || errorMessage.includes('Connection refused')
+                               || errorMessage.includes('broken pipe')
+
+          const displayMessage = isBackendCrash
+            ? '后端服务出现错误，请检查项目配置或稍后重试'
+            : errorMessage
+
+          notification.error({
+            content: displayMessage,
+            duration: 5000,
+          })
+          updateChat(+uuid, index,
+            {
+              dateTime: new Date().toLocaleString(),
+              text: `❌ 执行失败: ${displayMessage}`,
+              rule: ChatRule.Assistant,
+              error: true,
+              loading: false,
+            },
+          )
+        }
+      },
+      controller.signal)
+  }
+  catch (error) {
+    clearTimeout(timeoutId)
+    console.error('fetchChatMessage 执行错误:', error)
+
+    updateChat(+uuid, index, {
+      dateTime: new Date().toLocaleString(),
+      text: `❌ 系统错误: ${error.message || '未知错误'}`,
+      rule: ChatRule.Assistant,
+      error: true,
+      loading: false,
+    })
+  }
+  finally {
+    clearTimeout(timeoutId)
+  }
 }
 
-async function handleSubmit() {
+// 验证配置是否完整
+function validateConfig() {
+  const config = unitestStore.UnitestConfig
+  const errors = []
+
+  if (!config.sourcefilePath)
+    errors.push('源文件路径不能为空')
+
+  if (!config.testCommand)
+    errors.push('测试命令不能为空')
+
+  if (!config.model)
+    errors.push('AI模型不能为空')
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+  }
+}
+
+// 执行测试用例
+async function handleRunTests() {
+  console.log('开始执行测试用例...')
+
+  // 配置验证
+  const validation = validateConfig()
+  if (!validation.isValid) {
+    notification.error({
+      content: `配置不完整: ${validation.errors.join(', ')}`,
+      duration: 5000,
+    })
+    return
+  }
+
+  if (testLoading.value || scanLoading.value) {
+    console.log('当前有其他任务正在执行，跳过')
+    return
+  }
+
   let message = Object.values(unitestStore.UnitestConfig).join('|')
+  message = `TEST_EXECUTION|${+uuid}|${message}`
+  console.log('测试用例消息:', message)
 
-  message = `${+uuid}|${message}`
-
-  // alert(message)
-  // 如果正在生成，则不进行生成
-  if (loading.value)
+  if (!message || message.trim() === '') {
+    console.log('消息为空，跳过执行')
     return
+  }
 
-  if (!message || message.trim() === '')
-    return
-  addUnitest(
-    +uuid,
-    {
+  try {
+    addUnitest(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: `开始执行测试用例：${unitestStore.UnitestConfig.sourcefilePath}`,
+        rule: ChatRule.User,
+        error: false,
+      },
+    )
+    scrollToBottom()
+
+    testLoading.value = true
+    console.log('开始构建请求消息...')
+    const messages: Chat.RequestMessage[] = await buildRequestMessages(+uuid, dataSources.value.length - 1)
+    console.log('请求消息构建完成:', messages)
+
+    addChat(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: '',
+        loading: true,
+        rule: ChatRule.Assistant,
+        error: false,
+      },
+    )
+    scrollToBottom()
+
+    console.log('开始调用 fetchChatMessage...')
+    await fetchChatMessage(messages, +uuid, dataSources.value.length - 1, 'test')
+    console.log('fetchChatMessage 调用完成')
+    scrollToBottom()
+  }
+  catch (error) {
+    console.error('执行测试用例时出错:', error)
+    updateChat(+uuid, dataSources.value.length - 1, {
       dateTime: new Date().toLocaleString(),
-      text: message,
-      rule: ChatRule.User,
-      error: false,
-    },
-  )
-  scrollToBottom()
-
-  loading.value = true
-  prompt.value = ''
-  const messages: Chat.RequestMessage[] = await buildRequestMessages(+uuid, dataSources.value.length - 1)
-
-  addChat(
-    +uuid,
-    {
-      dateTime: new Date().toLocaleString(),
-      text: '',
-      loading: true,
+      text: `执行测试用例时出错: ${error.message}`,
       rule: ChatRule.Assistant,
-      error: false,
-    },
-  )
-  scrollToBottom()
-  // alert(messages)
-  // messages[0].content = `${uuid}|${messages[0].content}`
-  // alert(messages[0].content)
-  await fetchChatMessage(messages, +uuid, dataSources.value.length - 1)
-  scrollToBottom()
-  loading.value = false
+      error: true,
+      loading: false,
+    })
+  }
+  finally {
+    testLoading.value = false
+    console.log('测试用例执行完成，重置loading状态')
+  }
+}
+
+// 执行代码静态扫描
+async function handleStaticScan() {
+  console.log('开始执行代码静态扫描...')
+  if (testLoading.value || scanLoading.value) {
+    console.log('当前有其他任务正在执行，跳过')
+    return
+  }
+
+  let message = Object.values(unitestStore.UnitestConfig).join('|')
+  message = `STATIC_SCAN|${+uuid}|${message}`
+  console.log('静态扫描消息:', message)
+
+  if (!message || message.trim() === '') {
+    console.log('消息为空，跳过执行')
+    return
+  }
+
+  try {
+    addUnitest(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: `开始执行代码静态扫描：${unitestStore.UnitestConfig.sourcefilePath}`,
+        rule: ChatRule.User,
+        error: false,
+      },
+    )
+    scrollToBottom()
+
+    scanLoading.value = true
+    console.log('开始构建请求消息...')
+    const messages: Chat.RequestMessage[] = await buildRequestMessages(+uuid, dataSources.value.length - 1)
+    console.log('请求消息构建完成:', messages)
+
+    addChat(
+      +uuid,
+      {
+        dateTime: new Date().toLocaleString(),
+        text: '',
+        loading: true,
+        rule: ChatRule.Assistant,
+        error: false,
+      },
+    )
+    scrollToBottom()
+
+    console.log('开始调用 fetchChatMessage...')
+    await fetchChatMessage(messages, +uuid, dataSources.value.length - 1, 'scan')
+    console.log('fetchChatMessage 调用完成')
+    scrollToBottom()
+  }
+  catch (error) {
+    console.error('执行代码静态扫描时出错:', error)
+    updateChat(+uuid, dataSources.value.length - 1, {
+      dateTime: new Date().toLocaleString(),
+      text: `执行代码静态扫描时出错: ${error.message}`,
+      rule: ChatRule.Assistant,
+      error: true,
+      loading: false,
+    })
+  }
+  finally {
+    scanLoading.value = false
+    console.log('代码静态扫描执行完成，重置loading状态')
+  }
 }
 
 async function onRegenerate(index: number) {
-  if (loading.value)
+  if (testLoading.value || scanLoading.value)
     return
 
   const messages = await buildRequestMessages(+uuid, index)
   if (!messages || messages.length === 0)
     return
 
-  loading.value = true
+  testLoading.value = true
   updateChat(
     +uuid,
     index,
@@ -167,7 +322,7 @@ async function onRegenerate(index: number) {
 
   await fetchChatMessage(messages, +uuid, index)
 
-  loading.value = false
+  testLoading.value = false
 }
 
 async function saveexportFile() {
@@ -210,7 +365,7 @@ async function saveexportFile() {
 }
 
 function handleDelete(index: number) {
-  if (loading.value)
+  if (testLoading.value || scanLoading.value)
     return
   dialog.warning({
     title: t('chat.deleteMessage'),
@@ -224,7 +379,7 @@ function handleDelete(index: number) {
 }
 
 function handleClear() {
-  if (loading.value)
+  if (testLoading.value || scanLoading.value)
     return
 
   dialog.warning({
@@ -239,9 +394,10 @@ function handleClear() {
 }
 
 function handleStop() {
-  if (loading.value) {
+  if (testLoading.value || scanLoading.value) {
     controller.abort()
-    loading.value = false
+    testLoading.value = false
+    scanLoading.value = false
   }
 }
 
@@ -277,8 +433,19 @@ function handleStop() {
 // })
 
 const buttonDisabled = computed(() => {
-  // alert(unitestStore.UnitestConfig.sourcefilePath)
-  return loading.value || !unitestStore.UnitestConfig.sourcefilePath
+  return (testLoading.value || scanLoading.value) || !unitestStore.UnitestConfig.sourcefilePath
+})
+
+const testButtonDisabled = computed(() => {
+  return testLoading.value || scanLoading.value || !unitestStore.UnitestConfig.sourcefilePath
+})
+
+const scanButtonDisabled = computed(() => {
+  return testLoading.value || scanLoading.value || !unitestStore.UnitestConfig.sourcefilePath
+})
+
+const isAnyLoading = computed(() => {
+  return testLoading.value || scanLoading.value
 })
 
 const footerClass = computed(() => {
@@ -293,51 +460,9 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
-  if (loading.value)
+  if (testLoading.value || scanLoading.value)
     controller.abort()
 })
-
-async function getLatestFile(dirName = 'reports') {
-  try {
-    // Get the app data directory path
-    const appData = await appDataDir()
-
-    // Join the app data directory with the specified subdirectory
-    const targetDir = await join(appData, dirName)
-
-    // Read all files in the directory
-    const files = await readDir(targetDir)
-
-    if (!files.length)
-      return null // No files found
-
-    const sortedFiles = (await Promise.all(
-      files.map(async (file) => {
-        const fileStats = await stat(file.path)
-        return { ...file, modifiedAt: fileStats.modified }
-      }),
-    )).sort((a, b) => b.modifiedAt.getTime() - a.modifiedAt.getTime())
-
-    return sortedFiles[0]
-  }
-  catch (error) {
-    console.error('Error getting latest file:', error)
-    return null
-  }
-}
-
-// Usage example
-async function openLatestReport() {
-  const latestFile = await getLatestFile()
-  if (latestFile)
-    // console.log('Latest file path:', latestFile.path)
-    ms.info(`Latest file path:${latestFile.path}`)
-    // You can now open or process this file
-    // e.g., open(latestFile.path) if using Tauri's open command
-  else
-    // console.log('No files found')
-    ms.info('No files found')
-}
 </script>
 
 <template>
@@ -379,12 +504,11 @@ async function openLatestReport() {
                 @delete="handleDelete(index)"
               />
               <div class="sticky bottom-0 left-0 flex justify-center">
-                <NButton v-if="loading" type="warning" @click="handleStop">
+                <NButton v-if="isAnyLoading" type="warning" @click="handleStop">
                   <template #icon>
                     <SvgIcon icon="ri:stop-circle-line" />
                   </template>
-                  <!-- Stop Responding -->
-                  停止生成。。。
+                  停止执行...
                 </NButton>
               </div>
             </div>
@@ -442,16 +566,39 @@ async function openLatestReport() {
           <!-- <NButton type="primary" :disabled="buttonDisabled" :name="生成测" @click="handleSubmit"> -->
           <!-- <NButton type="primary" :disabled="buttonDisabled"  @click="handleSubmit"> -->
 
-          <NTooltip content="生成单元测试">
-            <NButton type="primary" :disabled="buttonDisabled" @click="handleSubmit">
-              <template #icon>
-                <span class="dark:text-black">
-                  <SvgIcon icon="ri:send-plane-fill" />
-                </span>
-              </template>
-              执行用例
-            </NButton>
-          </NTooltip>
+          <div class="flex items-center space-x-3">
+            <NTooltip content="执行测试用例">
+              <NButton
+                type="primary"
+                :disabled="testButtonDisabled"
+                :loading="testLoading"
+                @click="handleRunTests"
+              >
+                <template #icon>
+                  <span class="dark:text-black">
+                    <SvgIcon icon="ri:test-tube-line" />
+                  </span>
+                </template>
+                执行测试用例
+              </NButton>
+            </NTooltip>
+
+            <NTooltip content="执行代码静态扫描">
+              <NButton
+                type="success"
+                :disabled="scanButtonDisabled"
+                :loading="scanLoading"
+                @click="handleStaticScan"
+              >
+                <template #icon>
+                  <span class="dark:text-black">
+                    <SvgIcon icon="ri:bug-line" />
+                  </span>
+                </template>
+                代码静态扫描
+              </NButton>
+            </NTooltip>
+          </div>
         </div>
       </div>
     </footer>

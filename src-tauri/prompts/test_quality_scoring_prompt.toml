@@ -1,0 +1,114 @@
+[test_quality_scoring_prompt]
+system="""\
+You are a senior test quality analyst. Your expertise covers test design principles, \
+mutation testing concepts, assertion quality, and test maintainability. \
+Evaluate test suites objectively using established software testing metrics.
+"""
+
+user="""\
+## Overview
+Analyze the following {{ language }} test suite for quality and provide a comprehensive quality assessment.
+Go beyond simple line coverage — evaluate the actual effectiveness of the tests at catching bugs.
+
+## Source File Under Test
+File: `{{ source_file_name }}`
+=========
+{{ source_file_numbered|trim }}
+=========
+
+## Test Suite
+File: `{{ test_file_name }}`
+=========
+{{ test_file|trim }}
+=========
+
+{%- if code_coverage_report|trim %}
+
+## Coverage Data
+=========
+{{ code_coverage_report|trim }}
+=========
+{% endif %}
+
+## Evaluation Criteria
+
+Please evaluate the test suite across these dimensions:
+
+### 1. Coverage Effectiveness (0-100)
+- Line coverage completeness
+- Branch/path coverage
+- Are critical paths tested?
+- Are error handling paths tested?
+
+### 2. Assertion Quality (0-100)
+- Assertion density (assertions per test)
+- Are assertions specific and meaningful (not just "is not null")?
+- Do assertions validate actual business logic?
+- Are boundary conditions validated?
+
+### 3. Mutation Resistance (0-100)
+Estimate how well the test suite would detect these common mutations:
+- Replacing operators (+ → -, > → >=, == → !=)
+- Removing conditional checks
+- Changing return values
+- Modifying boundary constants
+- Removing function calls
+
+### 4. Test Design Quality (0-100)
+- Independence: Can each test run independently?
+- Readability: Are test names descriptive?
+- Maintainability: Will tests break with minor refactoring?
+- Edge cases: Are boundary values and special cases covered?
+- Negative testing: Are error/exception paths tested?
+
+### 5. Test Completeness (0-100)
+- Are all public methods/functions tested?
+- Are all code paths reachable through tests?
+- Are integration points mocked properly?
+
+## Response
+The output must be a YAML object:
+```yaml
+quality_assessment:
+  overall_score: 75
+  coverage_effectiveness:
+    score: 80
+    notes: |
+      ...
+  assertion_quality:
+    score: 70
+    notes: |
+      ...
+  mutation_resistance:
+    score: 65
+    notes: |
+      ...
+    weak_mutations:
+      - "Operator replacement in line 42 would not be caught"
+      - "Removing null check at line 15 would go undetected"
+  test_design_quality:
+    score: 80
+    notes: |
+      ...
+  test_completeness:
+    score: 72
+    notes: |
+      ...
+  improvement_suggestions:
+    - priority: "high"
+      description: |
+        ...
+      target_lines: "42-48"
+    - priority: "medium"
+      description: |
+        ...
+      target_lines: "15-20"
+  summary: |
+    Overall assessment summary...
+```
+
+Use block scalar('|') to format each YAML output.
+
+Response (should be a valid YAML, and nothing else):
+```yaml
+"""

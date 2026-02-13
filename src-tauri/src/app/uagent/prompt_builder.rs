@@ -44,6 +44,10 @@ pub struct PromptBuilder {
     additional_instructions: String,
     failed_test_runs: String,
     language: String,
+    // --- 新增字段：闭环反馈引擎上下文 ---
+    test_file_full_path: String,
+    failed_test_code: String,
+    error_output: String,
 }
 
 impl PromptBuilder {
@@ -119,6 +123,9 @@ impl PromptBuilder {
             additional_instructions,
             failed_test_runs,
             language: language.to_string(),
+            test_file_full_path: test_file_path.to_string(),
+            failed_test_code: String::new(),
+            error_output: String::new(),
         }
     }
 
@@ -203,8 +210,10 @@ impl PromptBuilder {
         );
         context.insert("language", &self.language);
         context.insert("max_tests", &MAX_TESTS_PER_RUN);
+        // 闭环反馈引擎新增上下文
+        context.insert("failed_test_code", &self.failed_test_code);
+        context.insert("error_output", &self.error_output);
         
-        // println!("==context:== {:?}", context);
         println!("==filename:== {:?}", filename);
         println!("==section:== {:?}", section);
         let config: PromptConfig = PromptConfig::from_file(filename).unwrap();
@@ -224,8 +233,50 @@ impl PromptBuilder {
 
         Ok((system_prompt, user_prompt))
     }
-}
 
-// fn main() {
-//     // Example usage
-// }
+    // =========================================================================
+    // 闭环反馈引擎：动态更新方法
+    // =========================================================================
+
+    /// 更新失败测试信息（用于迭代反馈）
+    pub fn set_failed_tests(&mut self, failed_tests: &str) {
+        self.failed_test_runs = if !failed_tests.is_empty() {
+            FAILED_TESTS_TEXT.replace("{failed_test_runs}", failed_tests)
+        } else {
+            String::new()
+        };
+    }
+
+    /// 更新覆盖率报告（覆盖率驱动迭代）
+    pub fn set_coverage_report(&mut self, report: &str) {
+        self.code_coverage_report = report.to_string();
+    }
+
+    /// 设置失败测试代码（用于自修复提示词）
+    pub fn set_failed_test_code(&mut self, code: &str) {
+        self.failed_test_code = code.to_string();
+    }
+
+    /// 设置错误输出（用于自修复提示词）
+    pub fn set_error_output(&mut self, output: &str) {
+        self.error_output = output.to_string();
+    }
+
+    /// 刷新测试文件内容（闭环迭代时，测试文件已被写入新测试）
+    pub fn refresh_test_file(&mut self) -> io::Result<()> {
+        let content = Self::read_file(&self.test_file_full_path)?;
+        self.test_file_numbered = content
+            .lines()
+            .enumerate()
+            .map(|(i, line)| format!("{} {}", i + 1, line))
+            .collect::<Vec<String>>()
+            .join("\n");
+        self.test_file = content;
+        Ok(())
+    }
+
+    /// 获取当前语言
+    pub fn get_language(&self) -> &str {
+        &self.language
+    }
+}

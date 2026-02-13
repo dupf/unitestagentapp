@@ -1,0 +1,268 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/27.0.9 Chrome/134.0.6998.205 Electron/35.4.0 Safari/537.36" version="27.0.9">
+  <diagram id="unitestagent-architecture" name="UnitestAgent Architecture">
+    <mxGraphModel dx="1551" dy="860" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="&lt;b&gt;UnitestAgent — System Architecture&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:11px;color:#666;&quot;&gt;AI-Powered Closed-Loop Unit Test Generation &amp; Static Code Analysis&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=16;" parent="1" vertex="1">
+          <mxGeometry x="460" y="20" width="520" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="user" value="Developer" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="60" y="290" width="40" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="frontend-group" value="&lt;b&gt;Frontend&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666;&quot;&gt;Vue 3 + TypeScript + Naive UI + Tailwind CSS + Pinia&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#dae8fc;strokeColor=#6c8ebf;arcSize=8;fontSize=13;fontColor=#333;spacingTop=5;" parent="1" vertex="1">
+          <mxGeometry x="160" y="90" width="600" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="chat-ui" value="&lt;b&gt;Chat UI&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Conversation Interface&lt;br&gt;Streaming Output&lt;br&gt;Progress Display&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=11;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="185" y="140" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="config-panel" value="&lt;b&gt;Config Panel&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Project Settings&lt;br&gt;Model Selection&lt;br&gt;Coverage Target&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=11;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="370" y="140" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="report-viewer" value="&lt;b&gt;Report Viewer&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;Dashboard Display&lt;br&gt;HTML Report Export&lt;br&gt;Prism.js Highlight&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#6c8ebf;fontSize=11;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="555" y="140" width="160" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="pinia" value="Pinia Store" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="185" y="232" width="100" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="i18n" value="Vue I18n (CN/EN/TW)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="300" y="232" width="130" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="router" value="Vue Router" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;fontStyle=1;" parent="1" vertex="1">
+          <mxGeometry x="445" y="232" width="100" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="ipc-bridge" value="&lt;div&gt;&lt;b&gt;&lt;br&gt;&lt;/b&gt;&lt;/div&gt;&lt;b&gt;&lt;div&gt;&lt;b style=&quot;background-color: transparent; color: light-dark(rgb(51, 51, 51), rgb(0, 0, 0));&quot;&gt;Tauri IPC Bridge&lt;/b&gt;&lt;/div&gt;&lt;/b&gt;&lt;font style=&quot;font-size:10px;&quot;&gt;invoke() &amp;amp; emit() — Commands &amp;amp; Events&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontColor=#333;" parent="1" vertex="1">
+          <mxGeometry x="160" y="295" width="600" height="45" as="geometry" />
+        </mxCell>
+        <mxCell id="ipc-cmd1" value="&lt;b&gt;fetch_unitest&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;fontColor=#b45309;" parent="1" vertex="1">
+          <mxGeometry x="200" y="300" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ipc-cmd2" value="&lt;b&gt;download_report&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;fontColor=#b45309;" parent="1" vertex="1">
+          <mxGeometry x="285" y="300" width="100" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ipc-evt1" value="&lt;b&gt;CHAT_FETCHEING_PROGRESS&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;fontColor=#b45309;" parent="1" vertex="1">
+          <mxGeometry x="495" y="300" width="160" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="ipc-evt2" value="&lt;b&gt;AGENT_PROGRESS&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=9;fontColor=#b45309;" parent="1" vertex="1">
+          <mxGeometry x="655" y="300" width="110" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="backend-group" value="&lt;b&gt;Backend (Rust)&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:10px;color:#666;&quot;&gt;Tauri 1.2 + Tokio Async Runtime&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f8cecc;strokeColor=#b85450;arcSize=6;fontSize=13;fontColor=#333;spacingTop=5;" parent="1" vertex="1">
+          <mxGeometry x="160" y="365" width="600" height="440" as="geometry" />
+        </mxCell>
+        <mxCell id="engine-group" value="&lt;b&gt;Closed-Loop Engine&lt;/b&gt;  (unitest_agent.rs)" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#fff;strokeColor=#b85450;strokeWidth=2;arcSize=8;fontSize=12;fontColor=#b91c1c;spacingTop=3;dashed=1;dashPattern=5 3;" parent="1" vertex="1">
+          <mxGeometry x="185" y="415" width="550" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="ai-caller" value="&lt;b&gt;AI Caller&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Streaming LLM&lt;br&gt;langchain-rust&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="205" y="448" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-builder" value="&lt;b&gt;Prompt Builder&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Tera Templates&lt;br&gt;TOML Configs&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="345" y="448" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="test-runner" value="&lt;b&gt;Test Runner&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Shell Execution&lt;br&gt;sh -c command&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="485" y="448" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="coverage-proc" value="&lt;b&gt;Coverage Processor&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Cobertura / Lcov&lt;br&gt;Jacoco Parser&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="205" y="520" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="self-healing" value="&lt;b&gt;Self-Healing&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;AI Test Repair&lt;br&gt;Error Analysis&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="345" y="520" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="progress" value="&lt;b&gt;Progress Tracker&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Phase Events&lt;br&gt;Iteration Records&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="485" y="520" width="120" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="loop-label" value="&lt;font style=&quot;font-size:10px;color:#b91c1c;&quot;&gt;&lt;b&gt;Generate → Execute → Coverage → Repair → Iterate&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="280" y="592" width="310" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="loop-arrow1" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;entryX=1;entryY=0.5;strokeColor=#b91c1c;strokeWidth=2;dashed=1;dashPattern=4 2;curved=1;" parent="1" source="ai-caller" target="coverage-proc" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="640" y="476" />
+              <mxPoint x="640" y="548" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="loop-arrow2" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;exitX=0;exitY=0.5;entryX=0;entryY=0.5;strokeColor=#b91c1c;strokeWidth=2;dashed=1;dashPattern=4 2;curved=1;" parent="1" source="coverage-proc" target="ai-caller" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="548" />
+              <mxPoint x="190" y="476" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="static-analysis" value="&lt;b&gt;Static Analysis&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Code Standards&lt;br&gt;Performance&lt;br&gt;Security&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="195" y="660" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="quality-scoring" value="&lt;b&gt;Quality Scoring&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;5-Dimension Score&lt;br&gt;Mutation Analysis&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="335" y="660" width="120" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="report-gen" value="&lt;b&gt;Report Generator&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;HTML Dashboard&lt;br&gt;Tera Templates&lt;br&gt;Prism.js Highlight&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;shadow=1;" parent="1" vertex="1">
+          <mxGeometry x="475" y="660" width="130" height="65" as="geometry" />
+        </mxCell>
+        <mxCell id="tokio" value="&lt;b&gt;Tokio&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;Async Runtime&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="630" y="660" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="reqwest" value="&lt;b&gt;Reqwest&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;HTTP Client&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="630" y="710" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="langchain" value="&lt;b&gt;langchain-rust&lt;/b&gt;&lt;br&gt;&lt;font style=&quot;font-size:9px;&quot;&gt;LLM SDK&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#666;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="630" y="758" width="100" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="llm-group" value="&lt;b&gt;LLM Providers&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f0f0f0;strokeColor=#999;arcSize=10;fontSize=12;fontColor=#333;spacingTop=3;" parent="1" vertex="1">
+          <mxGeometry x="870" y="365" width="260" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="deepseek" value="DeepSeek V3 / Reasoner" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="400" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="gpt4o" value="OpenAI GPT-4o" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="440" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="claude" value="Anthropic Claude 3.7 Sonnet" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="480" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="siliconflow" value="SiliconFlow" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="520" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="custom-api" value="Custom OpenAI-Compatible API" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#999;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="555" width="160" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="fs-group" value="&lt;b&gt;Local File System&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f0f0f0;strokeColor=#999;arcSize=10;fontSize=12;fontColor=#333;spacingTop=3;" parent="1" vertex="1">
+          <mxGeometry x="870" y="620" width="260" height="200" as="geometry" />
+        </mxCell>
+        <mxCell id="source-file" value="📄 Source Code Files" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="653" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="test-file" value="🧪 Test Files (read/write)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="690" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="coverage-file" value="📊 Coverage Reports" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="727" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="report-file" value="📋 HTML Report Output" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#82b366;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="890" y="764" width="160" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="prompts-group" value="&lt;b&gt;Prompt Templates&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;verticalAlign=top;fillColor=#f0f0f0;strokeColor=#999;arcSize=10;fontSize=12;fontColor=#333;spacingTop=3;" parent="1" vertex="1">
+          <mxGeometry x="870" y="90" width="260" height="250" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-gen" value="test_generation_prompt.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="122" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-static" value="static_code_analysis_cn.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="152" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-repair" value="test_repair_prompt.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="182" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-quality" value="test_quality_scoring_prompt.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="212" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-mutation" value="mutation_analysis_prompt.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="242" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-lang" value="language_extensions.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="272" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="prompt-headers" value="analyze_suite_test_*.toml" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff;strokeColor=#d6b656;fontSize=9;fontFamily=Courier New;" parent="1" vertex="1">
+          <mxGeometry x="885" y="302" width="220" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-user-fe" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#333;strokeWidth=1.5;entryX=0;entryY=0.5;" parent="1" source="user" target="frontend-group" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-fe-ipc" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#d6b656;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="frontend-group" target="ipc-bridge" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-ipc-be" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#d6b656;strokeWidth=2;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" parent="1" source="ipc-bridge" target="backend-group" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-ai-llm" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#3b82f6;strokeWidth=2;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" parent="1" source="ai-caller" target="llm-group" edge="1">
+          <mxGeometry x="0.3" y="10" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-pb-prompts" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#d6b656;strokeWidth=1.5;exitX=1;exitY=0.3;entryX=0;entryY=0.7;dashed=1;" parent="1" source="prompt-builder" target="prompts-group" edge="1">
+          <mxGeometry x="0.3" y="-10" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-runner-fs" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#82b366;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.3;" parent="1" source="test-runner" target="fs-group" edge="1">
+          <mxGeometry x="0.3" y="10" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-cov-fs" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#82b366;strokeWidth=1.5;exitX=0.5;exitY=1;entryX=0;entryY=0.6;dashed=1;" parent="1" source="coverage-proc" target="fs-group" edge="1">
+          <mxGeometry x="0.5" y="10" relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="265" y="740" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-rpt-fs" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#9673a6;strokeWidth=1.5;exitX=1;exitY=0.5;entryX=0;entryY=0.8;dashed=1;" parent="1" source="report-gen" target="fs-group" edge="1">
+          <mxGeometry x="0.3" y="10" relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-pb-ai" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#666;strokeWidth=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" parent="1" source="prompt-builder" target="ai-caller" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-ai-runner" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#666;strokeWidth=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="prompt-builder" target="test-runner" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-heal-ai" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;strokeColor=#d79b00;strokeWidth=1.5;exitX=0;exitY=0.3;entryX=0.5;entryY=1;dashed=1;dashPattern=3 2;" parent="1" source="self-healing" target="ai-caller" edge="1">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="265" y="536" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="edge-sa-rpt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#9673a6;strokeWidth=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="static-analysis" target="quality-scoring" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-qs-rpt" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;strokeColor=#9673a6;strokeWidth=1;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" parent="1" source="quality-scoring" target="report-gen" edge="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="platform-label" value="&lt;font face=&quot;Helvetica&quot; style=&quot;color: rgb(153, 153, 153); font-size: 12px;&quot;&gt;&lt;b&gt;Cross-Platform: macOS | Windows | Linux&lt;/b&gt;&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" parent="1" vertex="1">
+          <mxGeometry x="310" y="810" width="260" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-title" value="&lt;b&gt;Legend&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=11;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="90" width="60" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-fe" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="120" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-fe-t" value="Frontend Layer" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="113" width="90" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-be" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="148" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-be-t" value="Backend (Rust)" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="141" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-core" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="176" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-core-t" value="Core Engine Modules" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="169" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-heal" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="204" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-heal-t" value="Self-Healing (new)" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="197" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-analysis" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="232" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-analysis-t" value="Analysis &amp; Reporting" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="225" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ipc" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" parent="1" vertex="1">
+          <mxGeometry x="1160" y="260" width="20" height="14" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-ipc-t" value="IPC Bridge" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="253" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend-loop" value="" style="endArrow=classic;html=1;rounded=1;strokeColor=#b91c1c;strokeWidth=2;dashed=1;dashPattern=4 2;" parent="1" edge="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1160" y="295" as="sourcePoint" />
+            <mxPoint x="1180" y="295" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="legend-loop-t" value="Closed-Loop Iteration" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=10;" parent="1" vertex="1">
+          <mxGeometry x="1185" y="281" width="140" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

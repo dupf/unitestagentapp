@@ -9,3 +9,5 @@ pub mod unitest_agent;
 pub mod custom_logger;
 pub mod unitest;
 pub mod code_analysis;
+pub mod coverage_processor;
+pub mod progress;

@@ -152,43 +152,7 @@ impl AICaller {
         }
     }
 
-    // pub async fn call_remotedeepseek(
-    //     &self,
-    //     prompt: &std::collections::HashMap<String, String>,
-    //     max_tokens: usize,
-    // ) -> Result<String, Box<dyn std::error::Error>> {
-    //     // Create the OpenAI instance with DeepSeek configuration
-    //     let prompt_info: langchain_rust::prompt::MessageFormatterStruct = message_formatter![
-    //         fmt_message!(Message::new_system_message(prompt["system"].clone())),
-    //         fmt_template!(HumanMessagePromptTemplate::new(template_fstring!(
-    //             "{input}", "input"
-    //         )))
-    //     ];
-
-    //     //We can now combine these into a simple LLM chain:
-    //     let chain: langchain_rust::chain::LLMChain = LLMChainBuilder::new()
-    //         .prompt(prompt_info)
-    //         .llm(self.open_ai.clone())
-    //         .build()
-    //         .unwrap();
-
-    //     match chain
-    //         .invoke(prompt_args! {
-    //         "input" => prompt["user"].clone()
-
-    //         })
-    //         .await
-    //     {
-    //         Ok(result) => {
-    //             // println!("Result: {:?}", result);
-    //             Ok(result)
-    //         }
-    //         Err(e) => {
-    //             panic!("Error invoking LLMChain: {:?}", e);
-    //             Err(Box::new(e))
-    //         }
-    //     }
-    // }
+    
 
     pub async fn call_remotedeepseekstream(
         &self,

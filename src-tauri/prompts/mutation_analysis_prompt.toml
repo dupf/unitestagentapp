@@ -1,0 +1,114 @@
+[mutation_analysis_prompt]
+system="""\
+You are a mutation testing expert. Your task is to analyze source code and its test suite \
+to identify potential mutations that would NOT be detected by the existing tests. \
+This helps developers understand the true fault-detection capability of their tests \
+beyond simple line coverage metrics.
+"""
+
+user="""\
+## Overview
+Perform a mutation testing analysis on the following {{ language }} source code and its test suite.
+Identify mutations (small code changes) that would NOT be caught by the current tests,
+and suggest additional test cases to kill those surviving mutants.
+
+## Source File Under Test
+File: `{{ source_file_name }}`
+=========
+{{ source_file_numbered|trim }}
+=========
+
+## Test Suite
+File: `{{ test_file_name }}`
+=========
+{{ test_file|trim }}
+=========
+
+{%- if code_coverage_report|trim %}
+
+## Coverage Data
+=========
+{{ code_coverage_report|trim }}
+=========
+{% endif %}
+
+## Mutation Operators to Analyze
+Apply the following mutation operators mentally and determine which would survive:
+
+### 1. Arithmetic Operator Replacement (AOR)
+Replace: `+` → `-`, `*` → `/`, `%` → `*`, etc.
+
+### 2. Relational Operator Replacement (ROR)
+Replace: `>` → `>=`, `==` → `!=`, `<` → `<=`, etc.
+
+### 3. Conditional Operator Replacement (COR)
+Replace: `&&` → `||`, `!` → (remove), etc.
+
+### 4. Statement Deletion (SDL)
+Remove: function calls, return statements, assignments, etc.
+
+### 5. Constant Replacement (CR)
+Replace: `0` → `1`, `true` → `false`, boundary values, etc.
+
+### 6. Return Value Mutation (RVM)
+Replace: `return x` → `return 0`, `return null`, `return !x`, etc.
+
+## Response
+The output must be a YAML object:
+```yaml
+mutation_analysis:
+  total_mutants_analyzed: 25
+  estimated_killed: 18
+  estimated_survived: 7
+  mutation_score: 72.0
+
+  surviving_mutants:
+    - id: "M001"
+      line: 42
+      operator: "ROR"
+      original: "if (x > 0)"
+      mutated: "if (x >= 0)"
+      risk_level: "high"
+      explanation: |
+        Changing > to >= would not be detected because no test checks the boundary case where x == 0
+      suggested_test: |
+        Test with x = 0 to verify the boundary condition
+
+    - id: "M002"
+      line: 15
+      operator: "SDL"
+      original: "validate(input)"
+      mutated: "// removed"
+      risk_level: "critical"
+      explanation: |
+        Removing the validation call would go undetected as no test verifies that validation is actually called
+      suggested_test: |
+        Add a test that passes invalid input and asserts that validation rejects it
+
+  killed_mutants_summary:
+    - operator: "AOR"
+      count: 5
+      note: "Arithmetic mutations well-covered by computation tests"
+    - operator: "ROR"
+      count: 3
+      note: "Most relational checks have boundary tests"
+
+  recommendations:
+    - priority: "critical"
+      description: |
+        Add boundary value tests for all comparison operators
+      target_lines: "42, 58, 73"
+    - priority: "high"
+      description: |
+        Add negative tests to verify error handling paths are not removable
+      target_lines: "15-20"
+
+  summary: |
+    Overall mutation testing analysis summary...
+```
+
+Use block scalar('|') to format each YAML output.
+
+Response (should be a valid YAML, and nothing else):
+```yaml
+"""

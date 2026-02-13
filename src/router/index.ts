@@ -17,7 +17,19 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/unitest/index.vue'),
       },
     ],
-
+  },
+  {
+    path: '/unitestagent/:uuid?',
+    name: 'Unitestagent',
+    component: ChatLayout,
+    redirect: '/unitestagent',
+    children: [
+      {
+        path: '/unitestagent/:uuid?',
+        name: 'Unitestagent',
+        component: () => import('@/views/unitest/index.vue'),
+      },
+    ],
   },
   {
     path: '/window',
@@ -63,4 +75,4 @@ export const router = createRouter({
 export async function setupRouter(app: App) {
   app.use(router)
   await router.isReady()
-}
+} 

@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import { computed, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
+import { useMessage } from 'naive-ui'
 import { HoverButton, SvgIcon } from '@/components/common'
-import { useAppStore, useChatStore } from '@/store'
+import { useAppStore, useAuthStore, useChatStore } from '@/store'
 
 interface Props {
   usingContext: boolean
@@ -17,8 +19,11 @@ defineProps<Props>()
 
 const emit = defineEmits<Emit>()
 
+const router = useRouter()
+const message = useMessage()
 const appStore = useAppStore()
 const chatStore = useChatStore()
+const authStore = useAuthStore()
 
 const collapsed = computed(() => appStore.siderCollapsed)
 const currentChatHistory = computed(() => chatStore.getChatHistoryByCurrentActive)
@@ -43,6 +48,17 @@ function toggleUsingContext() {
 
 function handleSaveFile() {
   emit('saveFile')
+}
+
+function handleLogout() {
+  // Clear authentication token
+  authStore.removeToken()
+
+  // Show success message
+  message.success('Logged out successfully')
+
+  // Redirect to login page
+  router.push('/login')
 }
 </script>
 
@@ -94,6 +110,11 @@ function handleSaveFile() {
         <HoverButton @click="handleSaveFile">
           <span class="text-xl text-[#4f555e] dark:text-white">
             <SvgIcon icon="ri:save-line" />
+          </span>
+        </HoverButton>
+        <HoverButton tooltip="Logout" @click="handleLogout">
+          <span class="text-xl text-[#4f555e] dark:text-white">
+            <SvgIcon icon="ri:logout-circle-line" />
           </span>
         </HoverButton>
       </div>

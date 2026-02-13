@@ -111,6 +111,13 @@ export async function fetchUnitestAPIProcess(
   handlers.delete(id)
 }
 
+export function fetchLogin<T>(credentials: { username: string; password: string; rememberMe: boolean }) {
+  return post<T>({
+    url: '/login',
+    data: credentials,
+  })
+}
+
 export function fetchSession<T>() {
   return post<T>({
     url: '/session',
