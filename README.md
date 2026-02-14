@@ -185,7 +185,7 @@ Set up your API Key and model endpoint in the app settings:
 
 ---
 
-## How It Works — Closed-Loop Engine
+## How It Works — Closed-Loop Engine  
 
 ```
                          ┌─────────────────────────────────────────────────────┐
