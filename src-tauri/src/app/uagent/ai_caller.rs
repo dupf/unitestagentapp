@@ -135,8 +135,7 @@ impl AICaller {
                         OpenAIConfig::default()
                             .with_api_base(api_base.to_string())
                             .with_api_key(
-                                "sk-99h6gVR0Xrz96uyO991d81661cE742C4990d5f84B0B3B07e"
-                            // "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"
+                                
                             ),
                     )
                     .with_model(model.to_string());  

@@ -360,7 +360,7 @@ git push origin feature/your-feature
 
 ## License
 
-[MIT License](license) - Copyright (c) 2024 Eric Du
+[MIT License](license) - Copyright (c) 2026 Eric Du
 
 ---
 
